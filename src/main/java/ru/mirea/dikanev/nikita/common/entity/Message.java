@@ -3,7 +3,7 @@ package ru.mirea.dikanev.nikita.common.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import ru.mirea.dikanev.nikita.common.server.MessageHandler;
+import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 
 @Data

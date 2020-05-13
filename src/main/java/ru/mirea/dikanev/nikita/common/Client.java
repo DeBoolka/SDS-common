@@ -16,7 +16,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class Client {
 
-    public static final int PORT = 19000;
+    public static final int PORT = 18000;
 
     private Selector selector;
     private SocketChannel channel;
@@ -26,9 +26,7 @@ public class Client {
 
     // TODO: Нужно создать блокирующую очередь, в которую складывать данные для обмена между потоками
 
-
     public void init() throws Exception {
-
 
         // Слушаем ввод данных с консоли
         Thread t = new Thread(() -> {
@@ -58,7 +56,6 @@ public class Client {
         });
         t.start();
 
-
         selector = Selector.open();
         channel = SocketChannel.open();
         channel.configureBlocking(false);
@@ -67,10 +64,7 @@ public class Client {
         channel.connect(new InetSocketAddress("127.0.0.1", PORT));
 
         while (true) {
-            log.info("Waiting on select()...");
             int num = selector.select();
-            log.info("Raised {} events", num);
-
 
             Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
             while (keyIterator.hasNext()) {
@@ -102,16 +96,17 @@ public class Client {
                     //byte[] userInput = ...;
                     //channel.write(ByteBuffer.wrap(userInput));
 
+                    while (!queue.isEmpty()) {
+                        String line = queue.poll();
+                        if (line == null) {
+                            line = "Default message";
+                        }
 
-                    String line = queue.poll();
-                    if (line == null) {
-                        line = "Default message";
+                        if (line != null) {
+                            channel.write(ByteBuffer.wrap(line.getBytes()));
+                        }
                     }
 
-                    if (line != null) {
-                        channel.write(ByteBuffer.wrap(line.getBytes()));
-
-                    }
                     // Ждем записи в канал
                     sKey.interestOps(SelectionKey.OP_READ);
                 }

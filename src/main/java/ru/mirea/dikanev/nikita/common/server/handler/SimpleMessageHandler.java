@@ -1,4 +1,4 @@
-package ru.mirea.dikanev.nikita.common.server;
+package ru.mirea.dikanev.nikita.common.server.handler;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -15,10 +15,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.entity.ChangeOpsRequest;
 import ru.mirea.dikanev.nikita.common.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.MessageSender;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 
 @Log4j2
-public class MessageHandler implements Runnable {
+public class SimpleMessageHandler implements MessageHandler {
 
     private MessageSender sender;
 
@@ -29,9 +30,9 @@ public class MessageHandler implements Runnable {
 
     private ByteBuffer readBuffer = ByteBuffer.allocate(8192);
 
-    public MessageHandler() {
+    public SimpleMessageHandler() {
         sendingMessages = new ConcurrentHashMap<>();
-        changeRequests = new ArrayList<>();
+        changeRequests = Collections.synchronizedList(new ArrayList<>());
     }
 
     public void sendMessage(Message message) {
@@ -40,7 +41,7 @@ public class MessageHandler implements Runnable {
         }
 
         selector.keys().forEach(key -> {
-            if (key.interestOps() == SelectionKey.OP_ACCEPT) {
+            if (key.interestOps() == SelectionKey.OP_ACCEPT || message.getFrom().getChannel() == key.channel()) {
                 return;
             }
 
@@ -80,6 +81,7 @@ public class MessageHandler implements Runnable {
     public void run() {
         try (Selector selector = SelectorProvider.provider().openSelector()) {
             this.selector = selector;
+            setUp();
 
             while (true) {
                 changeOps();
@@ -99,6 +101,10 @@ public class MessageHandler implements Runnable {
         }
 
         log.info("Message handler has stopped");
+    }
+
+    protected void setUp() {
+        //This method requires descendants to adjust the space before running.
     }
 
     private void changeOps() {
@@ -153,6 +159,8 @@ public class MessageHandler implements Runnable {
         int numRead;
         try {
             numRead = connector.onRead(selector, this, readBuffer);
+            //TODO: If he cannot read a full message because of my or his very small buffer,
+            // this large message is divided into two or more messages with a smaller buffer size
         } catch (IOException e) {
             log.error("Failed to read from the channel: ", e);
             closeConnection(key, connector.getChannel());
@@ -209,4 +217,5 @@ public class MessageHandler implements Runnable {
             log.error("Failed to close the channel: ", e);
         }
     }
+
 }

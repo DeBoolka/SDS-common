@@ -8,7 +8,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 
-import ru.mirea.dikanev.nikita.common.server.MessageHandler;
+import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
 public class SocketChannelConnector implements ChannelConnector {
 
@@ -27,9 +27,9 @@ public class SocketChannelConnector implements ChannelConnector {
         this(channel, SelectionKey.OP_READ);
     }
 
-    public SocketChannelConnector(SocketAddress address, int op) {
+    public SocketChannelConnector(SocketAddress address) {
         this.address = address;
-        operation = op;
+        operation = SelectionKey.OP_CONNECT;
     }
 
     @Override
