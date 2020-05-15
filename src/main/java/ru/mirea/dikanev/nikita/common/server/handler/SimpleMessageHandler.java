@@ -15,13 +15,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.entity.ChangeOpsRequest;
 import ru.mirea.dikanev.nikita.common.entity.Message;
-import ru.mirea.dikanev.nikita.common.server.MessageSender;
+import ru.mirea.dikanev.nikita.common.server.processor.MessageProcessor;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
+import ru.mirea.dikanev.nikita.common.server.receiver.MessageReceiver;
+import ru.mirea.dikanev.nikita.common.server.sender.MessageSender;
+import ru.mirea.dikanev.nikita.common.server.service.MessageService;
 
 @Log4j2
 public class SimpleMessageHandler implements MessageHandler {
 
-    private MessageSender sender;
+    private MessageProcessor processor;
 
     private Selector selector;
 
@@ -41,24 +44,28 @@ public class SimpleMessageHandler implements MessageHandler {
         }
 
         selector.keys().forEach(key -> {
-            if (key.interestOps() == SelectionKey.OP_ACCEPT || message.getFrom().getChannel() == key.channel()) {
+            if (((ChannelConnector) key.attachment()).isUnnecessaryMessage(key, message)) {
                 return;
             }
 
-            List<Message> pendingMessages = sendingMessages.get(key.channel());
-            if (pendingMessages == null) {
-                pendingMessages = Collections.synchronizedList(new ArrayList<>());
-                if (sendingMessages.putIfAbsent(key.channel(), pendingMessages) != null) {
-                    pendingMessages = sendingMessages.get(key.channel());
-                }
-            }
-
-            pendingMessages.add(message);
+            sendMessage(key.channel(), message);
             changeRequests.add(new ChangeOpsRequest(key.channel(),
                     ChangeOpsRequest.CHANGE_OPS,
                     ChangeOpsRequest.OP_READ_WRITE));
             selector.wakeup();
         });
+    }
+
+    public void sendMessage(SelectableChannel channel, Message message) {
+        List<Message> pendingMessages = sendingMessages.get(channel);
+        if (pendingMessages == null) {
+            pendingMessages = Collections.synchronizedList(new ArrayList<>());
+            if (sendingMessages.putIfAbsent(channel, pendingMessages) != null) {
+                pendingMessages = sendingMessages.get(channel);
+            }
+        }
+
+        pendingMessages.add(message);
     }
 
     public void bind(ChannelConnector connector) throws IOException {
@@ -73,8 +80,8 @@ public class SimpleMessageHandler implements MessageHandler {
         selector.wakeup();
     }
 
-    public void setSender(MessageSender sender) {
-        this.sender = sender;
+    public void setProcessor(MessageProcessor processor) {
+        this.processor = processor;
     }
 
     @Override
@@ -171,6 +178,9 @@ public class SimpleMessageHandler implements MessageHandler {
             log.info("Client is disconnected");
             closeConnection(key, connector.getChannel());
             return;
+        } else if (numRead == -2) {
+            //The channel is not yet ready for reading
+            return;
         }
 
         byte[] messageCopy = new byte[numRead];
@@ -178,7 +188,7 @@ public class SimpleMessageHandler implements MessageHandler {
         Message message = new Message(this, connector, Message.WORLD, messageCopy);
 
         System.out.println("Receive: " + new String(messageCopy));
-        sender.send(message);
+        processor.send(message);
     }
 
     private void writeMessage(SelectionKey key, ChannelConnector connector) throws IOException {
@@ -187,8 +197,11 @@ public class SimpleMessageHandler implements MessageHandler {
         while (!messages.isEmpty()) {
             Message message = messages.get(0);
             ByteBuffer writeBuffer = ByteBuffer.wrap(message.getMessage());
-            int numWrite = connector.onWrite(selector, this, writeBuffer);
-            if (writeBuffer.remaining() > 0) {
+            int numBytesWritten = connector.onWrite(selector, this, writeBuffer);
+            if (numBytesWritten == -1) {
+                //The channel is not yet ready for writing
+                return;
+            } else if (writeBuffer.remaining() > 0) {
                 break;
             }
 

@@ -20,4 +20,7 @@ public class Message {
     private int space = NEAR;
     private byte[] message;
 
+    public Message(byte[] message) {
+        this.message = message;
+    }
 }

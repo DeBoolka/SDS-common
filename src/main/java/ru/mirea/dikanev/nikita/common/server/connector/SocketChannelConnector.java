@@ -8,6 +8,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 
+import ru.mirea.dikanev.nikita.common.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
 public class SocketChannelConnector implements ChannelConnector {
@@ -50,7 +51,9 @@ public class SocketChannelConnector implements ChannelConnector {
 
         channel = SocketChannel.open();
         channel.connect(address);
-        operation = SelectionKey.OP_CONNECT;
+        channel.finishConnect();
+        System.out.println(String.format("New: %s", channel.getLocalAddress()));
+        operation = SelectionKey.OP_CONNECT | SelectionKey.OP_READ;
     }
 
     @Override
@@ -61,15 +64,23 @@ public class SocketChannelConnector implements ChannelConnector {
     @Override
     public void onConnect(Selector selector, MessageHandler handler) throws IOException {
         channel.finishConnect();
+        System.out.println(String.format("C: %s -- %s", channel.getLocalAddress(), channel.getRemoteAddress()));
     }
 
     @Override
     public int onRead(Selector selector, MessageHandler handler, ByteBuffer readBuffer) throws IOException {
+        System.out.println(String.format("R: %s << %s", channel.getLocalAddress(), channel.getRemoteAddress()));
         return channel.read(readBuffer);
     }
 
     @Override
     public int onWrite(Selector selector, MessageHandler handler, ByteBuffer writeBuffer) throws IOException {
+        System.out.println(String.format("W: %s >> %s", channel.getLocalAddress(), channel.getRemoteAddress()));
         return channel.write(writeBuffer);
+    }
+
+    @Override
+    public boolean isUnnecessaryMessage(SelectionKey key, Message message) {
+        return key.interestOps() == SelectionKey.OP_ACCEPT  || message.getFrom() != null && message.getFrom() == this;
     }
 }

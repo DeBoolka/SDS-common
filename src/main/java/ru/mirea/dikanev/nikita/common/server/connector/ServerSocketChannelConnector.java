@@ -9,6 +9,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
+import ru.mirea.dikanev.nikita.common.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
 public class ServerSocketChannelConnector implements ChannelConnector {
@@ -52,6 +53,7 @@ public class ServerSocketChannelConnector implements ChannelConnector {
         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) getChannel();
 
         SocketChannel newChannel = serverSocketChannel.accept();
+        System.out.println(String.format("A: %s -- %s", newChannel.getLocalAddress(), newChannel.getRemoteAddress()));
         handler.bind(new SocketChannelConnector(newChannel));
     }
 
@@ -69,4 +71,10 @@ public class ServerSocketChannelConnector implements ChannelConnector {
     public int onWrite(Selector selector, MessageHandler handler, ByteBuffer writeBuffer) {
         throw new UnsupportedOperationException("Write event for ServerSocketChannel is not supported");
     }
+
+    @Override
+    public boolean isUnnecessaryMessage(SelectionKey key, Message message) {
+        return true;
+    }
+
 }

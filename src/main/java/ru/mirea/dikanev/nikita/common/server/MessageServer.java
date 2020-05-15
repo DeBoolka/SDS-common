@@ -11,21 +11,22 @@ import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
+import ru.mirea.dikanev.nikita.common.server.processor.MessageProcessor;
 
 @Log4j2
 public class MessageServer {
 
     private List<MessageHandler> handlers;
-    private MessageSender sender;
+    private MessageProcessor sender;
 
     private ExecutorService handlersExecutor;
 
     public MessageServer(int countSenders, MessageHandler... handlers) {
-        sender = new MessageSender(this, countSenders);
+        sender = new MessageProcessor(this, countSenders);
 
         this.handlers = Arrays.asList(handlers);
         this.handlers.forEach(handler -> {
-            handler.setSender(sender);
+            handler.setProcessor(sender);
         });
     }
 
