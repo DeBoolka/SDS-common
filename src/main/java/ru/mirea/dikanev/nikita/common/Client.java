@@ -16,7 +16,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class Client {
 
-    public static final int PORT = 18000;
+    public static final int PORT = 19000;
 
     private Selector selector;
     private SocketChannel channel;

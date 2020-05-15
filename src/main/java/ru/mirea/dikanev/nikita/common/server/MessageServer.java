@@ -12,6 +12,7 @@ import ru.mirea.dikanev.nikita.common.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 import ru.mirea.dikanev.nikita.common.server.processor.MessageProcessor;
+import ru.mirea.dikanev.nikita.common.server.processor.SimpleMessageProcessor;
 
 @Log4j2
 public class MessageServer {
@@ -22,12 +23,10 @@ public class MessageServer {
     private ExecutorService handlersExecutor;
 
     public MessageServer(int countSenders, MessageHandler... handlers) {
-        sender = new MessageProcessor(this, countSenders);
+        sender = new SimpleMessageProcessor(this, countSenders);
 
         this.handlers = Arrays.asList(handlers);
-        this.handlers.forEach(handler -> {
-            handler.setProcessor(sender);
-        });
+        this.handlers.forEach(handler -> handler.setUp(sender));
     }
 
     public MessageServer bind(ChannelConnector connector) throws IOException {
@@ -60,7 +59,7 @@ public class MessageServer {
     }
 
     public void send(Message message) {
-        sender.send(message);
+        sender.process(message);
     }
 
     private MessageHandler balanceHandlers(ChannelConnector connector) {

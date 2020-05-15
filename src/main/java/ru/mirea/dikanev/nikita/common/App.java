@@ -21,12 +21,13 @@ public class App {
     public static void main(String[] args) throws IOException, InterruptedException {
         System.out.println("Server has been started!");
 
-        dg();
+        slaveDat();
     }
 
-    private static void masterDat() throws IOException {
+    private static void masterDat() throws IOException, InterruptedException {
         MessageServer master = new MessageServer(1, new SimpleMessageHandler());
         master.start();
+        Thread.sleep(100);
         master.bind(new ServerSocketChannelConnector(new InetSocketAddress("127.0.0.1", 18000)));
     }
 
@@ -34,6 +35,7 @@ public class App {
         MessageHandler msgHandler = new SimpleMessageHandler();
         MessageServer slave = new MessageServer(1, msgHandler);
         slave.start();
+        Thread.sleep(100);
         slave.bind(new SocketChannelConnector(new InetSocketAddress("127.0.0.1", 18000)));
         slave.bind(new ServerSocketChannelConnector(new InetSocketAddress("127.0.0.1", 19000)));
     }
