@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 
-import ru.mirea.dikanev.nikita.common.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 
 public interface MessageSender {

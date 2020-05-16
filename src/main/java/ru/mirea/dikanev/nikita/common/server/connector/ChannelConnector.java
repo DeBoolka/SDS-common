@@ -6,7 +6,7 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 
-import ru.mirea.dikanev.nikita.common.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
 public interface ChannelConnector {

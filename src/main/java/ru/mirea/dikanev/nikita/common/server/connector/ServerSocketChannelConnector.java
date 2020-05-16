@@ -9,7 +9,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-import ru.mirea.dikanev.nikita.common.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
 public class ServerSocketChannelConnector implements ChannelConnector {

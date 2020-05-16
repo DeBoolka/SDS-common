@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import lombok.extern.log4j.Log4j2;
-import ru.mirea.dikanev.nikita.common.entity.ChangeOpsRequest;
+import ru.mirea.dikanev.nikita.common.server.entity.ChangeOpsRequest;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 

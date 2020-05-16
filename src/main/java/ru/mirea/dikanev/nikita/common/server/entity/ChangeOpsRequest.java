@@ -1,4 +1,4 @@
-package ru.mirea.dikanev.nikita.common.entity;
+package ru.mirea.dikanev.nikita.common.server.entity;
 
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;

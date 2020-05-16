@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import ru.mirea.dikanev.nikita.common.entity.ChangeOpsRequest;
-import ru.mirea.dikanev.nikita.common.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.entity.ChangeOpsRequest;
+import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 import ru.mirea.dikanev.nikita.common.server.service.ConnectorService;
@@ -35,7 +35,7 @@ public class SimpleMessageSender implements MessageSender {
 
         while (!messages.isEmpty()) {
             Message message = messages.get(0);
-            ByteBuffer writeBuffer = ByteBuffer.wrap(message.getMessage());
+            ByteBuffer writeBuffer = ByteBuffer.wrap(message.getData().array());
             int numBytesWritten = connector.onWrite(handler.selector(), handler, writeBuffer);
             if (numBytesWritten == -1) {
                 //The channel is not yet ready for writing

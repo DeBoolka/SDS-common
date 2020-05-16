@@ -9,7 +9,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 
 import lombok.extern.log4j.Log4j2;
-import ru.mirea.dikanev.nikita.common.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
 @Log4j2

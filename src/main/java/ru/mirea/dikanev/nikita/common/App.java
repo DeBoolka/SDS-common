@@ -2,26 +2,24 @@ package ru.mirea.dikanev.nikita.common;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.channels.SelectionKey;
 
-import ru.mirea.dikanev.nikita.common.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.MessageServer;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
-import ru.mirea.dikanev.nikita.common.server.connector.ClientDatagramChannelConnector;
-import ru.mirea.dikanev.nikita.common.server.connector.ServerDatagramChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.connector.ServerSocketChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.connector.SocketChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.handler.MasterRemoteMessageHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.SimpleMessageHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.SlaveRemoteMessageServer;
+import ru.mirea.dikanev.nikita.common.server.protocol.codec.MessageCodec;
 
 public class App {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         System.out.println("Server has been started!");
 
-        slaveDat();
+        dg();
     }
 
     private static void masterDat() throws IOException, InterruptedException {
@@ -45,13 +43,15 @@ public class App {
         msgHandler = new SimpleMessageHandler();
         MessageServer sendServer = new MessageServer(1, msgHandler);
         sendServer.start();
+
+        Thread.sleep(100);
         ChannelConnector sendCon = new SocketChannelConnector(new InetSocketAddress("127.0.0.1", 19000));
         sendServer.bind(new SocketChannelConnector(new InetSocketAddress("127.0.0.1", 19000)));
         sendServer.bind(sendCon);
 
         Thread.sleep(5000);
 
-        sendServer.send(new Message(null, sendCon, Message.NEAR, "Hello UDP".getBytes()));
+        sendServer.send(new Message(sendCon, MessageCodec.newMessagePack("Hello UDP")));
     }
 
     static void startMaster() {
