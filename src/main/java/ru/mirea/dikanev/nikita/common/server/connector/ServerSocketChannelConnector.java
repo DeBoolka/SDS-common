@@ -19,12 +19,12 @@ public class ServerSocketChannelConnector implements ChannelConnector {
 
     private int operation;
 
-    public ServerSocketChannelConnector(SocketAddress address, int op) throws IOException {
+    public ServerSocketChannelConnector(SocketAddress address, int op) {
         operation = op;
         socketAddress = address;
     }
 
-    public ServerSocketChannelConnector(SocketAddress address) throws IOException {
+    public ServerSocketChannelConnector(SocketAddress address) {
         this(address, SelectionKey.OP_ACCEPT);
     }
 

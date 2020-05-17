@@ -4,7 +4,6 @@ import java.net.SocketAddress;
 
 import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.server.connector.ServerSocketChannelConnector;
-import ru.mirea.dikanev.nikita.common.server.connector.SocketChannelConnector;
 
 @Log4j2
 public class MasterRemoteMessageHandler extends SimpleMessageHandler {
@@ -16,8 +15,8 @@ public class MasterRemoteMessageHandler extends SimpleMessageHandler {
     }
 
     @Override
-    protected void setUp() {
-        super.setUp();
+    protected void setUpRunning() {
+        super.setUpRunning();
 
         try {
             bind(new ServerSocketChannelConnector(address));

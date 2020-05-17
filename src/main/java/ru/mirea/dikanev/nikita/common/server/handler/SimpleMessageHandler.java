@@ -5,10 +5,15 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.spi.SelectorProvider;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
+import lombok.Data;
 import lombok.extern.log4j.Log4j2;
-import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
+import ru.mirea.dikanev.nikita.common.server.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.exception.HandlerInternalException;
 import ru.mirea.dikanev.nikita.common.server.processor.MessageProcessor;
 import ru.mirea.dikanev.nikita.common.server.receiver.MessageReceiver;
 import ru.mirea.dikanev.nikita.common.server.receiver.SimpleMessageReceiver;
@@ -18,14 +23,19 @@ import ru.mirea.dikanev.nikita.common.server.service.ConnectorService;
 import ru.mirea.dikanev.nikita.common.server.service.SimpleConnectorService;
 
 @Log4j2
+@Data
 public class SimpleMessageHandler implements MessageHandler {
 
-    private MessageSender sender;
-    private MessageReceiver receiver;
-    private ConnectorService service;
-    private MessageProcessor processor;
+    protected MessageSender sender;
+    protected MessageReceiver receiver;
+    protected ConnectorService service;
+    protected MessageProcessor processor;
 
-    private Selector selector;
+    protected Selector selector;
+
+    private volatile boolean isRunning = false;
+
+    private List<ChannelConnector> preparedConnectorsForBinding = null;
 
     @Override
     public void setUp(MessageProcessor processor) {
@@ -52,14 +62,22 @@ public class SimpleMessageHandler implements MessageHandler {
 
     @Override
     public void bind(ChannelConnector connector) throws IOException {
-        service.bind(connector);
+        if (isRunning()) {
+            service.bind(connector);
+            return;
+        } else if (preparedConnectorsForBinding == null) {
+            preparedConnectorsForBinding = new ArrayList<>();
+        }
+
+        preparedConnectorsForBinding.add(connector);
     }
 
     @Override
     public void run() {
         try (Selector selector = SelectorProvider.provider().openSelector()) {
             this.selector = selector;
-            setUp();
+            isRunning = true;
+            setUpRunning();
 
             while (true) {
                 service.changeOps(selector.keys());
@@ -68,22 +86,38 @@ public class SimpleMessageHandler implements MessageHandler {
 
                 if (Thread.interrupted()) {
                     selector.keys().forEach(service::closeConnection);
-                    receiver.clear();
-                    processor.clear(this);
-                    sender.clear();
-                    service.clear();
                     break;
                 }
             }
         } catch (Exception e) {
             log.error("Message handler error: ", e);
+        } finally {
+            isRunning = false;
+            receiver.clear();
+            processor.clear(this);
+            sender.clear();
+            service.clear();
         }
 
         log.info("Message handler has stopped");
     }
 
-    protected void setUp() {
-        //This method requires descendants to adjust the space before running.
+    /**
+     * This method is required descendants to adjust the space before running.
+     */
+    protected void setUpRunning() {
+        if (preparedConnectorsForBinding == null) {
+            return;
+        }
+
+        preparedConnectorsForBinding.forEach(connector -> {
+            try {
+                bind(connector);
+            } catch (IOException e) {
+                throw new HandlerInternalException("Handler setup failed", e);
+            }
+        });
+        preparedConnectorsForBinding.clear();
     }
 
     private void handle() throws IOException {

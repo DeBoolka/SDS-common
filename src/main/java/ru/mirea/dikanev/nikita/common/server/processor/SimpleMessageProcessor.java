@@ -19,8 +19,17 @@ public class SimpleMessageProcessor implements MessageProcessor {
     private MessageCodec messageCodec = new MessageCodec();
 
     public SimpleMessageProcessor(MessageServer server, int processCount) {
+        this(processCount);
         this.server = server;
+
+    }
+
+    public SimpleMessageProcessor(int processCount) {
         this.pendingMessage = Executors.newFixedThreadPool(processCount);
+    }
+
+    public void setServer(MessageServer server) {
+        this.server = server;
     }
 
     @Override

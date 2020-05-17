@@ -1,73 +1,21 @@
 package ru.mirea.dikanev.nikita.common.server;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-import lombok.extern.log4j.Log4j2;
-import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
+import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
-import ru.mirea.dikanev.nikita.common.server.processor.MessageProcessor;
-import ru.mirea.dikanev.nikita.common.server.processor.SimpleMessageProcessor;
 
-@Log4j2
-public class MessageServer {
+public interface MessageServer {
 
-    private List<MessageHandler> handlers;
-    private MessageProcessor sender;
+    void start();
 
-    private ExecutorService handlersExecutor;
+    void stop() throws InterruptedException;
 
-    public MessageServer(int countSenders, MessageHandler... handlers) {
-        sender = new SimpleMessageProcessor(this, countSenders);
+    MessageHandler bind(ChannelConnector connector) throws IOException;
 
-        this.handlers = Arrays.asList(handlers);
-        this.handlers.forEach(handler -> handler.setUp(sender));
-    }
+    void send(Message message);
 
-    public MessageServer bind(ChannelConnector connector) throws IOException {
-        if (handlersExecutor == null) {
-            throw new IllegalStateException("Server isn't running");
-        }
-
-        MessageHandler handler = balanceHandlers(connector);
-        handler.bind(connector);
-
-        return this;
-    }
-
-    public void start() {
-        log.info("Server is starting...\nNumber of handlers: {}", handlers.size());
-        handlersExecutor = Executors.newFixedThreadPool(handlers.size());
-        handlers.forEach(handler -> handlersExecutor.submit(handler));
-
-        log.info("Server has been started");
-    }
-
-    public void stop() throws InterruptedException {
-        log.info("Server is stopping...");
-
-        log.info("Handlers are shutdowning");
-        handlersExecutor.shutdownNow();
-        handlersExecutor.awaitTermination(5, TimeUnit.SECONDS);
-
-        log.info("Server has been stopped");
-    }
-
-    public void send(Message message) {
-        sender.process(message);
-    }
-
-    private MessageHandler balanceHandlers(ChannelConnector connector) {
-        //TODO: make later
-        return handlers.get((int) (System.currentTimeMillis() % handlers.size()));
-    }
-
-    public List<MessageHandler> getMessageHandlers() {
-        return handlers;
-    }
+    List<MessageHandler> getMessageHandlers();
 }

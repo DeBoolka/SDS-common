@@ -18,8 +18,8 @@ public class SlaveRemoteMessageServer extends SimpleMessageHandler {
     }
 
     @Override
-    protected void setUp() {
-        super.setUp();
+    protected void setUpRunning() {
+        super.setUpRunning();
 
         try {
             bind(new SocketChannelConnector(masterAddress));
