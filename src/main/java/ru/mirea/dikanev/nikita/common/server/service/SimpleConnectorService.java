@@ -7,17 +7,22 @@ import java.nio.channels.Selector;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.server.entity.ChangeOpsRequest;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
+import ru.mirea.dikanev.nikita.common.server.entity.Entity;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
 @Log4j2
 public class SimpleConnectorService implements ConnectorService {
 
     private MessageHandler handler;
+
+    private final Map<Integer, Entity> users = new ConcurrentHashMap<>();
 
     private final List<ChangeOpsRequest> changeRequests;
 

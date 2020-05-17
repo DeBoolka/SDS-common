@@ -5,7 +5,7 @@ import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
 public interface MessageProcessor {
 
-    void process(Message message);
+    void process(MessageHandler handler, Message message);
 
     void clear(MessageHandler handler);
 }

@@ -19,8 +19,8 @@ public class CellManagerMessageProcessor implements MessageProcessor {
     }
 
     @Override
-    public void process(Message message) {
-        messageTasks.submit(() -> server.getMessageHandlers().forEach(handler -> handler.sendMessage(message)));
+    public void process(MessageHandler handler, Message message) {
+        messageTasks.submit(() -> server.getMessageHandlers().forEach(h -> h.sendMessage(message)));
     }
 
     @Override

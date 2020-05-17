@@ -23,7 +23,7 @@ public class CellManagerServer extends SimpleMessageServer {
                     try {
                         return CellManagerHandler.create(processor);
                     } catch (IOException e) {
-                        throw new HandlerInternalException("Created Cell handler failed", e);
+                        throw new HandlerInternalException("Created Cell Manager handler failed", e);
                     }
                 })
                 .toArray(CellManagerHandler[]::new));

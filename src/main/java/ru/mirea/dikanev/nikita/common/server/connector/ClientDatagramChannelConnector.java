@@ -117,17 +117,4 @@ public  class ClientDatagramChannelConnector implements ChannelConnector {
         return -2;
     }
 
-    /*public static SocketAddress extractSocketAddress(ByteBuffer readBuffer) {
-        //This method is a piece of shit
-        String msg = new String(readBuffer.array());
-        int endOfHost = msg.indexOf(":");
-        if (endOfHost < 0) {
-            throw new IllegalArgumentException("Socket address did not find in the buffer");
-        }
-
-        String host = msg.substring(0, endOfHost);
-        int port = Integer.parseInt(msg.substring(endOfHost + 1));
-
-        return  new InetSocketAddress(host, port);
-    }*/
 }

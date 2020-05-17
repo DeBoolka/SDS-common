@@ -56,7 +56,7 @@ public class SimpleMessageReceiver implements MessageReceiver {
         Message message = new Message(connector, messageCopy);
 
         System.out.println("[Read new package]");
-        processor.process(message);
+        processor.process(handler, message);
     }
 
     @Override

@@ -70,7 +70,7 @@ public class SimpleMessageServer implements MessageServer {
     }
 
     public void send(Message message) {
-        processor.process(message);
+        processor.process(null, message);
     }
 
     protected MessageHandler balanceHandlers() {

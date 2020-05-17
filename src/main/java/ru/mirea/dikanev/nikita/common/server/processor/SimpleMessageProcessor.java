@@ -33,7 +33,7 @@ public class SimpleMessageProcessor implements MessageProcessor {
     }
 
     @Override
-    public void process(Message message) {
+    public void process(MessageHandler handler, Message message) {
         pendingMessage.submit(() -> {
             MessagePackage pack = messageCodec.decode(message.getData());
             System.out.println(String.format("Receive -> %d: %s", pack.hop, new String(pack.data)));
@@ -43,7 +43,7 @@ public class SimpleMessageProcessor implements MessageProcessor {
             messageCodec.encode(writeBuffer, pack);
 
             server.getMessageHandlers()
-                    .forEach(handler -> handler.sendMessage(new Message(message.getFrom(), writeBuffer)));
+                    .forEach(h -> h.sendMessage(new Message(message.getFrom(), writeBuffer)));
         });
     }
 

@@ -3,13 +3,13 @@ package ru.mirea.dikanev.nikita.common;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import ru.mirea.dikanev.nikita.common.server.CellManagerServer;
-import ru.mirea.dikanev.nikita.common.server.SimpleMessageServer;
-import ru.mirea.dikanev.nikita.common.server.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.CellServer;
 import ru.mirea.dikanev.nikita.common.server.MessageServer;
+import ru.mirea.dikanev.nikita.common.server.SimpleMessageServer;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.connector.ServerSocketChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.connector.SocketChannelConnector;
+import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.handler.MasterRemoteMessageHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.SimpleMessageHandler;
@@ -21,7 +21,12 @@ public class App {
     public static void main(String[] args) throws IOException, InterruptedException {
         System.out.println("Server has been started!");
 
-        slaveDat();
+        CellServer server = CellServer.create(1, 1);
+        server.bindClient(new InetSocketAddress("localhost", 18000));
+        server.bindServer(new InetSocketAddress("localhost", 19000));
+        server.start();
+//        masterDat();
+//        slaveDat();
     }
 
     private static void masterDat() throws IOException, InterruptedException {
