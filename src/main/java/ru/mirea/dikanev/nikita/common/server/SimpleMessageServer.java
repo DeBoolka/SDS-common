@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 import ru.mirea.dikanev.nikita.common.server.processor.MessageProcessor;
 import ru.mirea.dikanev.nikita.common.server.processor.SimpleMessageProcessor;
@@ -46,7 +47,11 @@ public class SimpleMessageServer implements MessageServer {
         }
 
         MessageHandler handler = balanceHandlers();
-        handler.bind(connector);
+        try {
+            handler.bind(connector);
+        } catch (AuthenticationException e) {
+            log.warn(e);
+        }
 
         return handler;
     }

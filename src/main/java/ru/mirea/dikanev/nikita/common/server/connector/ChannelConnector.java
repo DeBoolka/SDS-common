@@ -5,7 +5,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.util.Optional;
 
+import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
@@ -33,4 +35,8 @@ public interface ChannelConnector {
     int onWrite(Selector selector, MessageHandler handler, ByteBuffer writeBuffer) throws IOException;
 
     boolean isUnnecessaryMessage(SelectionKey key, Message message);
+
+    Optional<Client> getClient();
+
+    void setClient(Client client);
 }

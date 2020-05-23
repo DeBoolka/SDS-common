@@ -1,23 +1,28 @@
 package ru.mirea.dikanev.nikita.common.server.processor;
 
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.server.CellServer;
-import ru.mirea.dikanev.nikita.common.server.entity.Entity;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
+import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.handler.CellHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.LoginCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.MessageCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.LoginPackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.MessagePackage;
+import ru.mirea.dikanev.nikita.common.server.service.ClientService;
+import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
 
 @Log4j2
 public class CellMessageProcessor implements MessageProcessor, Codes {
 
     private CellServer server;
+    private ClientService clientService;
 
     private ExecutorService messageTasks;
 
@@ -27,6 +32,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
     public CellMessageProcessor(CellServer server, int nThreads) {
         this.server = server;
         this.messageTasks = Executors.newFixedThreadPool(nThreads);
+        this.clientService = new SimpleClientService();
     }
 
     @Override
@@ -66,9 +72,11 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
         String password = new String(loginPack.password);
 
         Message newMessage;
-        if (password.startsWith(login) && password.endsWith("pass")) {
+        try {
+            Client client = clientService.login(message.getFrom(), login, password);
+            message.getFrom().setClient(client);
             newMessage = new Message(MessageCodec.newMessagePack("Login successful"));
-        } else {
+        } catch (AuthenticationException e) {
             newMessage = new Message(MessageCodec.newMessagePack("Login failed"));
         }
 
@@ -76,6 +84,12 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
     }
 
     private void communication(CellHandler handler, Message message) {
+        if (!clientService.isAuth(message.getFrom().getClient().get())) {
+            handler.sendMessage(message.getFrom().getChannel(),
+                    new Message(MessageCodec.newMessagePack("Permission denied")));
+            return;
+        }
+
         MessagePackage messagePackage = messageCodec.decode(message.getData());
 
         if (messagePackage.space == MessagePackage.WORLD) {
@@ -85,10 +99,8 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
             handler.sendMessage(message);
             return;
         }
-        //TODO: Send message by id here [sendMessage(receiverId, message)]
-        log.warn("Sending message by id isn't supported!");
-        Message errorMsg = new Message(MessageCodec.newMessagePack("Sending message by id isn't supported!"));
-        handler.sendMessage(message.getFrom().getChannel(), errorMsg);
+        Optional<Client> receiverClient = clientService.getClient(messagePackage.receiverId);
+        receiverClient.ifPresent(client -> handler.sendMessage(client.getChannel().getChannel(), message));
     }
 
     private void ping(Message message) {

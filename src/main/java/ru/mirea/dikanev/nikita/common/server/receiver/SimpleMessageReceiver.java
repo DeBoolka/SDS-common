@@ -38,13 +38,13 @@ public class SimpleMessageReceiver implements MessageReceiver {
             numRead = connector.onRead(key.selector(), handler, readBuffer);
         } catch (IOException e) {
             log.error("Failed to read from the channel: ", e);
-            service.closeConnection(key, connector.getChannel());
+            service.closeConnection(key, connector);
             return;
         }
 
         if (numRead == -1) {
             log.info("Client is disconnected");
-            service.closeConnection(key, connector.getChannel());
+            service.closeConnection(key, connector);
             return;
         } else if (numRead == -2) {
             //The channel is not yet ready for reading

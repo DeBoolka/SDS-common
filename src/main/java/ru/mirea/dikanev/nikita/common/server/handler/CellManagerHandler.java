@@ -6,6 +6,7 @@ import java.net.SocketAddress;
 import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnectorProvider;
+import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.processor.MessageProcessor;
 import ru.mirea.dikanev.nikita.common.server.receiver.MessageReceiver;
 import ru.mirea.dikanev.nikita.common.server.receiver.SimpleMessageReceiver;
@@ -20,7 +21,8 @@ public class CellManagerHandler extends SimpleMessageHandler {
     private CellManagerHandler(){
     }
 
-    public static CellManagerHandler create(MessageProcessor processor, SocketAddress... addresses) throws IOException {
+    public static CellManagerHandler create(MessageProcessor processor, SocketAddress... addresses)
+            throws IOException, AuthenticationException {
         CellManagerHandler handler = buildHandler(processor);
         for (SocketAddress address : addresses) {
             handler.bind(address);
@@ -43,7 +45,7 @@ public class CellManagerHandler extends SimpleMessageHandler {
         return handler;
     }
 
-    public void bind(SocketAddress address) throws IOException {
+    public void bind(SocketAddress address) throws IOException, AuthenticationException {
         super.bind(ChannelConnectorProvider.openServerConnector(address));
     }
 }

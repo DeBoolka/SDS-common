@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.stream.IntStream;
 
+import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.exception.HandlerInternalException;
 import ru.mirea.dikanev.nikita.common.server.handler.CellManagerHandler;
 import ru.mirea.dikanev.nikita.common.server.processor.CellManagerMessageProcessor;
@@ -22,7 +23,7 @@ public class CellManagerServer extends SimpleMessageServer {
                 .mapToObj(i -> {
                     try {
                         return CellManagerHandler.create(processor);
-                    } catch (IOException e) {
+                    } catch (IOException | AuthenticationException e) {
                         throw new HandlerInternalException("Created Cell Manager handler failed", e);
                     }
                 })
@@ -31,7 +32,7 @@ public class CellManagerServer extends SimpleMessageServer {
         return server;
     }
 
-    public CellManagerHandler bind(SocketAddress address) throws IOException {
+    public CellManagerHandler bind(SocketAddress address) throws IOException, AuthenticationException {
         CellManagerHandler handler = (CellManagerHandler) balanceHandlers();
         handler.bind(address);
 

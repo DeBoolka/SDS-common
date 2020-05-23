@@ -6,16 +6,15 @@ import java.nio.channels.SelectionKey;
 import java.util.Set;
 
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
+import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 
 public interface ConnectorService {
 
-    void closeConnection(SelectionKey key);
-
-    void closeConnection(SelectableChannel channel);
+    void closeConnection(SelectionKey key, ChannelConnector connector);
 
     void closeConnection(SelectionKey key, SelectableChannel channel);
 
-    void bind(ChannelConnector connector) throws IOException;
+    void bind(ChannelConnector connector) throws IOException, AuthenticationException;
 
     void accept(SelectionKey key, ChannelConnector connector) throws IOException;
 

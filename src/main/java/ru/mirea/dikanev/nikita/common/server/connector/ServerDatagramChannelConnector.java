@@ -7,9 +7,12 @@ import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.util.Optional;
 
 import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
+import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
 @Log4j2
@@ -17,6 +20,7 @@ public class ServerDatagramChannelConnector implements ChannelConnector {
 
     private DatagramChannel channel;
     private SocketAddress address;
+    private Client client;
 
     private int operation;
 
@@ -59,7 +63,11 @@ public class ServerDatagramChannelConnector implements ChannelConnector {
     public int onRead(Selector selector, MessageHandler handler, ByteBuffer readBuffer) throws IOException {
         SocketAddress remoteAddress = channel.receive(readBuffer);
         ClientDatagramChannelConnector clientChannel = new ClientDatagramChannelConnector(remoteAddress);
-        handler.bind(clientChannel);
+
+        try {
+            handler.bind(clientChannel);
+        } catch (AuthenticationException ignore) {
+        }
 
         return -2;
     }
@@ -72,5 +80,15 @@ public class ServerDatagramChannelConnector implements ChannelConnector {
     @Override
     public boolean isUnnecessaryMessage(SelectionKey key, Message message) {
         return true;
+    }
+
+    @Override
+    public Optional<Client> getClient() {
+        return Optional.ofNullable(client);
+    }
+
+    @Override
+    public void setClient(Client client) {
+        this.client = client;
     }
 }

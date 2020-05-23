@@ -7,10 +7,12 @@ import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.util.Optional;
 
 import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.server.entity.ChangeOpsRequest;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
 @Log4j2
@@ -24,6 +26,8 @@ public  class ClientDatagramChannelConnector implements ChannelConnector {
 
     private DatagramChannel channel;
     private SocketAddress remoteAddress;
+
+    private Client client;
 
     private int operation;
 
@@ -117,4 +121,13 @@ public  class ClientDatagramChannelConnector implements ChannelConnector {
         return -2;
     }
 
+    @Override
+    public Optional<Client> getClient() {
+        return Optional.ofNullable(client);
+    }
+
+    @Override
+    public void setClient(Client client) {
+        this.client = client;
+    }
 }

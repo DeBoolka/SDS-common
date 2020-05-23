@@ -64,7 +64,6 @@ public class SimpleMessageSender implements MessageSender {
             }
 
             send(key.channel(), message);
-            service.changeOps(key.channel(), ChangeOpsRequest.OP_READ_WRITE);
         });
     }
 
@@ -79,6 +78,7 @@ public class SimpleMessageSender implements MessageSender {
         }
 
         pendingMessages.add(message);
+        service.changeOps(channel, ChangeOpsRequest.OP_READ_WRITE);
     }
 
     @Override

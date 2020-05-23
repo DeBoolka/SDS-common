@@ -7,39 +7,38 @@ import java.nio.channels.Selector;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.extern.log4j.Log4j2;
-import ru.mirea.dikanev.nikita.common.server.entity.ChangeOpsRequest;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
-import ru.mirea.dikanev.nikita.common.server.entity.Entity;
+import ru.mirea.dikanev.nikita.common.server.entity.ChangeOpsRequest;
+import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
+import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
 @Log4j2
 public class SimpleConnectorService implements ConnectorService {
 
     private MessageHandler handler;
-
-    private final Map<Integer, Entity> users = new ConcurrentHashMap<>();
+    private ClientService clientService;
 
     private final List<ChangeOpsRequest> changeRequests;
 
     public SimpleConnectorService(MessageHandler handler) {
+        this(handler, new SimpleClientService());
+    }
+
+    public SimpleConnectorService(MessageHandler handler, ClientService clientService) {
         this.handler = handler;
+        this.clientService = clientService;
         changeRequests = Collections.synchronizedList(new ArrayList<>());
     }
 
     @Override
-    public void closeConnection(SelectionKey key) {
-        closeConnection(key, key.channel());
-    }
-
-    @Override
-    public void closeConnection(SelectableChannel channel) {
-        SelectionKey key = channel.keyFor(handler.selector());
-        closeConnection(key, channel);
+    public void closeConnection(SelectionKey key, ChannelConnector connector) {
+        connector.getClient().ifPresent(client -> clientService.exitClient(client));
+        closeConnection(key, connector.getChannel());
     }
 
     @Override
@@ -53,8 +52,11 @@ public class SimpleConnectorService implements ConnectorService {
     }
 
     @Override
-    public void bind(ChannelConnector connector) throws IOException {
+    public void bind(ChannelConnector connector) throws IOException, AuthenticationException {
         log.info("New client");
+        Optional<Client> client = connector.getClient();
+        connector.setClient(clientService.login(connector, client.orElse(null)));
+
         Selector selector = handler.selector();
 
         connector.bind(selector, handler);

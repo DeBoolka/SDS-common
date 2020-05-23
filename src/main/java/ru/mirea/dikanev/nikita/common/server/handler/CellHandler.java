@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.net.SocketAddress;
 
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnectorProvider;
-import ru.mirea.dikanev.nikita.common.server.entity.CellSize;
+import ru.mirea.dikanev.nikita.common.math.Rectangle;
+import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.processor.MessageProcessor;
 import ru.mirea.dikanev.nikita.common.server.receiver.MessageReceiver;
 import ru.mirea.dikanev.nikita.common.server.receiver.SimpleMessageReceiver;
@@ -18,7 +19,7 @@ import ru.mirea.dikanev.nikita.common.server.service.SimpleConnectorService;
  */
 public class CellHandler extends SimpleMessageHandler {
 
-    private CellSize cellSize;
+    private Rectangle size; //TODO: ask a manager for a size
 
     private CellHandler(){
     }
@@ -41,11 +42,11 @@ public class CellHandler extends SimpleMessageHandler {
         return handler;
     }
 
-    public void bindServer(SocketAddress address) throws IOException {
+    public void bindServer(SocketAddress address) throws IOException, AuthenticationException {
         super.bind(ChannelConnectorProvider.openServerConnector(address));
     }
 
-    public void bindClient(SocketAddress address) throws IOException {
+    public void bindClient(SocketAddress address) throws IOException, AuthenticationException {
         super.bind(ChannelConnectorProvider.openClientConnector(address));
     }
 

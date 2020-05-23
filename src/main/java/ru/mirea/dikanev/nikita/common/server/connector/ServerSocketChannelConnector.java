@@ -8,14 +8,18 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Optional;
 
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
+import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
 public class ServerSocketChannelConnector implements ChannelConnector {
 
     private ServerSocketChannel channel;
     private SocketAddress socketAddress;
+    private Client client;
 
     private int operation;
 
@@ -54,7 +58,11 @@ public class ServerSocketChannelConnector implements ChannelConnector {
 
         SocketChannel newChannel = serverSocketChannel.accept();
         System.out.println(String.format("A: %s -- %s", newChannel.getLocalAddress(), newChannel.getRemoteAddress()));
-        handler.bind(new SocketChannelConnector(newChannel));
+        try {
+            handler.bind(new SocketChannelConnector(newChannel));
+        } catch (AuthenticationException ignore) {
+            newChannel.close();
+        }
     }
 
     @Override
@@ -75,6 +83,16 @@ public class ServerSocketChannelConnector implements ChannelConnector {
     @Override
     public boolean isUnnecessaryMessage(SelectionKey key, Message message) {
         return true;
+    }
+
+    @Override
+    public Optional<Client> getClient() {
+        return Optional.ofNullable(client);
+    }
+
+    @Override
+    public void setClient(Client client) {
+        this.client = client;
     }
 
 }

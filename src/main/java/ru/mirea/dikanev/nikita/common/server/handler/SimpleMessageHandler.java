@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.exception.HandlerInternalException;
 import ru.mirea.dikanev.nikita.common.server.processor.MessageProcessor;
 import ru.mirea.dikanev.nikita.common.server.receiver.MessageReceiver;
@@ -60,7 +61,7 @@ public class SimpleMessageHandler implements MessageHandler {
     }
 
     @Override
-    public void bind(ChannelConnector connector) throws IOException {
+    public void bind(ChannelConnector connector) throws IOException, AuthenticationException {
         if (isRunning()) {
             service.bind(connector);
             return;
@@ -84,7 +85,7 @@ public class SimpleMessageHandler implements MessageHandler {
                 handle();
 
                 if (Thread.interrupted()) {
-                    selector.keys().forEach(service::closeConnection);
+                    selector.keys().forEach(key -> service.closeConnection(key, (ChannelConnector) key.attachment()));
                     break;
                 }
             }
@@ -112,7 +113,7 @@ public class SimpleMessageHandler implements MessageHandler {
         preparedConnectorsForBinding.forEach(connector -> {
             try {
                 bind(connector);
-            } catch (IOException e) {
+            } catch (IOException | AuthenticationException e) {
                 throw new HandlerInternalException("Handler setup failed", e);
             }
         });
@@ -124,7 +125,7 @@ public class SimpleMessageHandler implements MessageHandler {
             ChannelConnector connector = (ChannelConnector) key.attachment();
 
             if (!key.isValid()) {
-                service.closeConnection(key, connector.getChannel());
+                service.closeConnection(key, connector);
             } else if (key.isAcceptable()) {
                 log.info("[Accept]");
                 service.accept(key, connector);;

@@ -7,14 +7,17 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Optional;
 
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
+import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
 public class SocketChannelConnector implements ChannelConnector {
 
     private SocketChannel channel;
     private SocketAddress address = null;
+    private Client client;
 
     private int operation;
 
@@ -82,5 +85,15 @@ public class SocketChannelConnector implements ChannelConnector {
     @Override
     public boolean isUnnecessaryMessage(SelectionKey key, Message message) {
         return key.interestOps() == SelectionKey.OP_ACCEPT  || message.getFrom() != null && message.getFrom() == this;
+    }
+
+    @Override
+    public Optional<Client> getClient() {
+        return Optional.ofNullable(client);
+    }
+
+    @Override
+    public void setClient(Client client) {
+        this.client = client;
     }
 }
