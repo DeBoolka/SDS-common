@@ -38,7 +38,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
     @Override
     public void process(MessageHandler handler, Message message) {
         messageTasks.submit(() -> {
-            int actionCode = message.getData().getInt();
+            int actionCode = message.getAction();
             action((CellHandler) handler, actionCode, message);
         });
     }
@@ -67,7 +67,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
     }
 
     private void login(CellHandler handler, Message message) {
-        LoginPackage loginPack = loginCodec.decode(message.getData());
+        LoginPackage loginPack = loginCodec.decode(message.payload());
         String login = new String(loginPack.login);
         String password = new String(loginPack.password);
 
@@ -75,22 +75,21 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
         try {
             Client client = clientService.login(message.getFrom(), login, password);
             message.getFrom().setClient(client);
-            newMessage = new Message(MessageCodec.newMessagePack("Login successful"));
+            newMessage = Message.send(message.getFrom(), "Login successful");
         } catch (AuthenticationException e) {
-            newMessage = new Message(MessageCodec.newMessagePack("Login failed"));
+            newMessage = Message.send(message.getFrom(), "Login failed");
         }
 
         handler.sendMessage(message.getFrom().getChannel(), newMessage);
     }
 
     private void communication(CellHandler handler, Message message) {
-        if (!clientService.isAuth(message.getFrom().getClient().get())) {
-            handler.sendMessage(message.getFrom().getChannel(),
-                    new Message(MessageCodec.newMessagePack("Permission denied")));
+        if (!clientService.isAuth(message.getFrom().getClient().orElse(null))) {
+            handler.sendMessage(message.getFrom().getChannel(), Message.send(message.getFrom(), "Permission denied"));
             return;
         }
 
-        MessagePackage messagePackage = messageCodec.decode(message.getData());
+        MessagePackage messagePackage = messageCodec.decode(message.payload());
 
         if (messagePackage.space == MessagePackage.WORLD) {
             server.getMessageHandlers().forEach(h -> h.sendMessage(message));

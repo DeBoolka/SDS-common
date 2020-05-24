@@ -53,7 +53,7 @@ public class SimpleMessageReceiver implements MessageReceiver {
 
         byte[] messageCopy = new byte[numRead];
         System.arraycopy(readBuffer.array(), 0, messageCopy, 0, numRead);
-        Message message = new Message(connector, messageCopy);
+        Message message = Message.createWithAction(connector, ByteBuffer.wrap(messageCopy));
 
         System.out.println("[Read new package]");
         processor.process(handler, message);

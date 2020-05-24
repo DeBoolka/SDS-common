@@ -35,23 +35,15 @@ public class SimpleMessageProcessor implements MessageProcessor {
     @Override
     public void process(MessageHandler handler, Message message) {
         pendingMessage.submit(() -> {
-            message.getData().mark();
-            if (message.getData().getInt() == Codes.LOGIN_ACTION) {
-                server.getMessageHandlers()
-                        .forEach(h -> h.sendMessage(new Message(message.getFrom(), message.getData().array())));
+            if (message.isAction(Codes.LOGIN_ACTION)) {
+                server.getMessageHandlers().forEach(h -> h.sendMessage(message));
             }
-            message.getData().reset();
 
-            MessagePackage pack = messageCodec.decode(message.getData());
-            System.out.println(String.format("Receive -> %d: %s", pack.hop, new String(pack.data)));
-
+            MessagePackage pack = messageCodec.decode(message.payload());
+            System.out.println(String.format("Simple process, hop %d: %s", pack.hop, new String(pack.data)));
             pack.hop++;
-            ByteBuffer writeBuffer = ByteBuffer.allocate(MessageCodec.size(pack) + Integer.BYTES);
-            writeBuffer.putInt(Codes.COMMUNICATION_ACTION);
-            messageCodec.encode(writeBuffer, pack);
 
-            server.getMessageHandlers()
-                    .forEach(h -> h.sendMessage(new Message(message.getFrom(), writeBuffer)));
+            server.getMessageHandlers().forEach(h -> h.sendMessage(Message.send(message.getFrom(), pack)));
         });
     }
 

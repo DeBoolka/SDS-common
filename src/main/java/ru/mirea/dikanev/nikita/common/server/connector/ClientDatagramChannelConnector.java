@@ -65,8 +65,7 @@ public  class ClientDatagramChannelConnector implements ChannelConnector {
             channel.connect(remoteAddress);
         }
 
-        Message msg = new Message("I want to become friends".getBytes());
-        handler.sendMessage(getChannel(), msg);
+        handler.sendMessage(getChannel(), Message.send(this, "I want to become friends"));
     }
 
     @Override

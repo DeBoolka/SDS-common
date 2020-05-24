@@ -8,6 +8,10 @@ public class MessageCodec extends Codec<MessagePackage> {
 
     private static MessageCodec messageCodec = new MessageCodec();
 
+    public static MessageCodec inst() {
+        return messageCodec;
+    }
+
     @Override
     public ByteBuffer encode(ByteBuffer buffer, MessagePackage messagePackage) {
         buffer.putShort(messagePackage.space);
@@ -32,10 +36,18 @@ public class MessageCodec extends Codec<MessagePackage> {
         return Short.BYTES + (Integer.BYTES * 2) + stringBytes(messagePackage.data);
     }
 
-    public static byte[] newMessagePack(String text) {
-        MessagePackage messagePackage = new MessagePackage((short) 1, 0,0, text.getBytes());
+    public static byte[] newByteMessagePack(short space, String text) {
+        MessagePackage messagePackage = newMessagePack(space, text);
         ByteBuffer buffer = ByteBuffer.allocate(size(messagePackage));
 
         return messageCodec.encode(buffer, messagePackage).array();
+    }
+
+    public static byte[] newByteMessagePack(String text) {
+        return newByteMessagePack(MessagePackage.WORLD, text);
+    }
+
+    public static MessagePackage newMessagePack(short space, String text) {
+        return new MessagePackage(space, 0,0, text.getBytes());
     }
 }

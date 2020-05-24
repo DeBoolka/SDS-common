@@ -47,44 +47,9 @@ public class App {
         slave.bind(new SocketChannelConnector(new InetSocketAddress("127.0.0.1", 19000)));
         Thread.sleep(100);
 
-        byte[] mcM = MessageCodec.newMessagePack("Hello mather fuckers");
-        byte[] mc = LoginCodec.newLoginPack("admin", "admin");
-        ByteBuffer bf = ByteBuffer.allocate(mc.length + Integer.BYTES);
-        bf.putInt(Codes.LOGIN_ACTION);
-        bf.put(mc);
-        slave.send(new Message(bf.array()));
+        slave.send(Message.create(null, Codes.LOGIN_ACTION, LoginCodec.newLoginPack("admin", "admin")));
         Thread.sleep(2000);
-        slave.send(new Message(mcM));
-//        slave.bind(new ServerSocketChannelConnector(new InetSocketAddress("127.0.0.1", 19000)));
-    }
-
-    private static void dg() throws IOException, InterruptedException {
-        MessageHandler msgHandler;
-        msgHandler = new SimpleMessageHandler();
-        MessageServer sendServer = new SimpleMessageServer(1, msgHandler);
-        sendServer.start();
-
-        Thread.sleep(100);
-        ChannelConnector sendCon = new SocketChannelConnector(new InetSocketAddress("127.0.0.1", 19000));
-        sendServer.bind(new SocketChannelConnector(new InetSocketAddress("127.0.0.1", 19000)));
-        sendServer.bind(sendCon);
-
-        Thread.sleep(5000);
-
-        sendServer.send(new Message(sendCon, MessageCodec.newMessagePack("Hello UDP")));
-    }
-
-    static void startMaster() {
-        MessageServer server = new SimpleMessageServer(2,
-                new MasterRemoteMessageHandler(new InetSocketAddress("127.0.0.1", 18000)));
-        server.start();
-    }
-
-    static void startSlave() {
-        MessageServer server = new SimpleMessageServer(2,
-                new SlaveRemoteMessageServer(new InetSocketAddress("127.0.0.1", 18000),
-                        new InetSocketAddress("127.0.0.1", 19000)));
-        server.start();
+        slave.send(Message.send(null, "Hello mather fuckers"));
     }
 
 }
