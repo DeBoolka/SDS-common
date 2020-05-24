@@ -1,11 +1,13 @@
 package ru.mirea.dikanev.nikita.common.server.service;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.entity.client.UnauthenticatedClient;
@@ -15,10 +17,20 @@ import ru.mirea.dikanev.nikita.common.server.secure.Credentials;
 
 public class SimpleClientService implements ClientService {
 
-    private Map<Integer, String> users = new HashMap<>();//TODO: replace with user storage
-    private Map<Integer, Client> sessions = new HashMap<>();
+    public static final Integer ROOT_USER_ID = 0;
+
+    private Map<Integer, UserInfo> users = new ConcurrentHashMap<>();//TODO: replace with user storage
+    private Map<Integer, Client> sessions = new ConcurrentHashMap<>();
 
     private volatile AtomicInteger lastId = new AtomicInteger(0);
+
+    {
+        users.put(ROOT_USER_ID, new UserInfo("root:root", true));
+    }
+
+    public static Client getRootClient() {
+        return new Client(ROOT_USER_ID, new Credentials("root", "root"));
+    }
 
     @Override
     public Client login(ChannelConnector connector, String login, String password)
@@ -44,7 +56,9 @@ public class SimpleClientService implements ClientService {
     @Override
     public void exitClient(Client client) {
         sessions.remove(client.getId());
-        users.remove(client.getId());
+        if (!ROOT_USER_ID.equals(client.getId())) {
+            users.remove(client.getId());
+        }
     }
 
     @Override
@@ -78,16 +92,33 @@ public class SimpleClientService implements ClientService {
     }
 
     private Optional<Integer> getClientIdByLoginAndPassword(String login, String password) {
+        if ("root".equals(login) && "root".equals(password)) {
+            return Optional.of(ROOT_USER_ID);
+        }
+
         String logPass = login + ":" + password;
         return users.entrySet()
                 .stream()
-                .filter(entry -> entry.getValue().equals(logPass))
+                .filter(entry -> logPass.equals(entry.getValue().getLoginAndPassword()))
                 .findFirst()
                 .map(Entry::getKey);
     }
 
     private boolean authentication(int clientId, Credentials credentials) {
-        String loginAndPassword = users.computeIfAbsent(clientId, k -> "admin:admin");
-        return loginAndPassword.equals(credentials.getLogin() + ":" + credentials.getPassword());
+        UserInfo info = users.computeIfAbsent(clientId, k -> new UserInfo("admin:admin", false));
+        if (info.isServer) {
+            return true;
+        }
+        return info.getLoginAndPassword().equals(credentials.getLogin() + ":" + credentials.getPassword());
     }
+
+    @Data
+    @AllArgsConstructor
+    public static class UserInfo {
+
+        private String loginAndPassword;
+        private boolean isServer;
+
+    }
+
 }

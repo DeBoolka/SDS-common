@@ -6,6 +6,7 @@ import java.util.concurrent.Executors;
 
 import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.server.CellServer;
+import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
@@ -21,13 +22,13 @@ import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
 @Log4j2
 public class CellMessageProcessor implements MessageProcessor, Codes {
 
-    private CellServer server;
-    private ClientService clientService;
+    protected CellServer server;
+    protected ClientService clientService;
 
     private ExecutorService messageTasks;
 
-    private MessageCodec messageCodec = new MessageCodec();
-    private LoginCodec loginCodec = new LoginCodec();
+    protected MessageCodec messageCodec = new MessageCodec();
+    protected LoginCodec loginCodec = new LoginCodec();
 
     public CellMessageProcessor(CellServer server, int nThreads) {
         this.server = server;
@@ -62,11 +63,11 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
         }
     }
 
-    private void resize(Message message) {
+    protected void resize(Message message) {
         //TODO: make
     }
 
-    private void login(CellHandler handler, Message message) {
+    protected void login(CellHandler handler, Message message) {
         LoginPackage loginPack = loginCodec.decode(message.payload());
         String login = new String(loginPack.login);
         String password = new String(loginPack.password);
@@ -83,26 +84,25 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
         handler.sendMessage(message.getFrom().getChannel(), newMessage);
     }
 
-    private void communication(CellHandler handler, Message message) {
-        if (!clientService.isAuth(message.getFrom().getClient().orElse(null))) {
-            handler.sendMessage(message.getFrom().getChannel(), Message.send(message.getFrom(), "Permission denied"));
-            return;
-        }
-
+    protected void communication(CellHandler handler, Message message) {
         MessagePackage messagePackage = messageCodec.decode(message.payload());
 
         if (messagePackage.space == MessagePackage.WORLD) {
-            server.getMessageHandlers().forEach(h -> h.sendMessage(message));
-            return;
-        } else if (messagePackage.space == MessagePackage.SECTOR_SPACE || messagePackage.receiverId == 0) {
             handler.sendMessage(message);
             return;
         }
-        Optional<Client> receiverClient = clientService.getClient(messagePackage.receiverId);
-        receiverClient.ifPresent(client -> handler.sendMessage(client.getChannel().getChannel(), message));
+
+        handler.sendMessage(message, key -> {
+            //Send only to Sectors excluding other Cells
+            //And too this is a piece of shit.
+            //If you want to plunge into shit, look at the communication method in the SectorMessageProcessor
+            return ((ChannelConnector) key.attachment()).getClient()
+                    .map(value -> !SimpleClientService.ROOT_USER_ID.equals(value.getId()))
+                    .orElse(true);
+        });
     }
 
-    private void ping(Message message) {
+    protected void ping(Message message) {
         //TODO: make
     }
 

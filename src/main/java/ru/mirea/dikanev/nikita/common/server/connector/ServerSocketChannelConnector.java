@@ -14,6 +14,7 @@ import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
+import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
 
 public class ServerSocketChannelConnector implements ChannelConnector {
 
@@ -50,6 +51,10 @@ public class ServerSocketChannelConnector implements ChannelConnector {
 
         channel = ServerSocketChannel.open();
         channel.socket().bind(socketAddress);
+
+        Client client = SimpleClientService.getRootClient();
+        client.setChannel(this);
+        setClient(client);
     }
 
     @Override

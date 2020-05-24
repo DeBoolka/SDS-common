@@ -8,8 +8,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
+import ru.mirea.dikanev.nikita.common.Client;
 import ru.mirea.dikanev.nikita.common.server.entity.ChangeOpsRequest;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
@@ -53,7 +56,7 @@ public class SimpleMessageSender implements MessageSender {
     }
 
     @Override
-    public void send(Message message) {
+    public void send(Message message, Predicate<SelectionKey> predicate) {
         if (message == null) {
             throw new NullPointerException("Sent message should be non-null");
         }
@@ -61,14 +64,20 @@ public class SimpleMessageSender implements MessageSender {
         handler.selector().keys().forEach(key -> {
             if (((ChannelConnector) key.attachment()).isUnnecessaryMessage(key, message)) {
                 return;
+            } else if (predicate != null && !predicate.test(key)) {
+                return;
             }
 
-            send(key.channel(), message);
+            send(key.channel(), message, null);
         });
     }
 
     @Override
-    public void send(SelectableChannel channel, Message message) {
+    public void send(SelectableChannel channel, Message message, Predicate<SelectionKey> predicate) {
+        if (predicate != null && !predicate.test(channel.keyFor(handler.selector()))) {
+            return;
+        }
+
         List<Message> pendingMessages = sendingMessages.get(channel);
         if (pendingMessages == null) {
             pendingMessages = Collections.synchronizedList(new ArrayList<>());

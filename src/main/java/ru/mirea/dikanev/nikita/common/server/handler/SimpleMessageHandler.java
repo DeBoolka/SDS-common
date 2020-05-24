@@ -7,9 +7,11 @@ import java.nio.channels.Selector;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
+import ru.mirea.dikanev.nikita.common.Client;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
@@ -47,12 +49,22 @@ public class SimpleMessageHandler implements MessageHandler {
 
     @Override
     public void sendMessage(Message message) {
-        sender.send(message);
+        sendMessage(message, null);
+    }
+
+    @Override
+    public void sendMessage(Message message, Predicate<SelectionKey> predicate) {
+        sender.send(message, predicate);
     }
 
     @Override
     public void sendMessage(SelectableChannel channel, Message message) {
-        sender.send(channel, message);
+        sendMessage(channel, message, null);
+    }
+
+    @Override
+    public void sendMessage(SelectableChannel channel, Message msg, Predicate<SelectionKey> predicate) {
+        sender.send(channel, msg, predicate);
     }
 
     @Override
