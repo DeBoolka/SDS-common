@@ -75,7 +75,15 @@ public class SimpleMessageServer implements MessageServer {
     }
 
     public void send(Message message) {
-        processor.process(null, message);
+        if (message.getFrom() == null) {
+            processor.process(handlers.get(0), message);
+            return;
+        }
+
+        handlers.stream()
+                .filter(h -> h.contains(message.getFrom()))
+                .findFirst()
+                .ifPresentOrElse(h -> processor.process(h, message), () -> processor.process(null, message));
     }
 
     protected MessageHandler balanceHandlers() {

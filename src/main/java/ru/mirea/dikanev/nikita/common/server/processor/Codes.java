@@ -6,5 +6,6 @@ public interface Codes {
     int COMMUNICATION_ACTION = 0x82;
     int RESIZE_ACTION = 0x83;
     int LOGIN_ACTION = 0x84;
+    int RECONNECT_ACTION = 0x85;
 
 }

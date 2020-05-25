@@ -1,5 +1,7 @@
 package ru.mirea.dikanev.nikita.common.server.processor;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -14,8 +16,10 @@ import ru.mirea.dikanev.nikita.common.server.handler.CellHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.LoginCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.MessageCodec;
+import ru.mirea.dikanev.nikita.common.server.protocol.codec.ReconnectCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.LoginPackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.MessagePackage;
+import ru.mirea.dikanev.nikita.common.server.protocol.pack.ReconnectPackage;
 import ru.mirea.dikanev.nikita.common.server.service.ClientService;
 import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
 
@@ -27,6 +31,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
 
     private ExecutorService messageTasks;
 
+    protected ReconnectCodec reconnectCodec = new ReconnectCodec();
     protected MessageCodec messageCodec = new MessageCodec();
     protected LoginCodec loginCodec = new LoginCodec();
 
@@ -57,6 +62,9 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                 return;
             case RESIZE_ACTION:
                 resize(message);
+                return;
+            case RECONNECT_ACTION:
+                reconnect(handler, message);
                 return;
             default:
                 return;
@@ -104,6 +112,22 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
 
     protected void ping(Message message) {
         //TODO: make
+    }
+
+    private void reconnect(CellHandler handler, Message message) {
+        ReconnectPackage reconnectPackage = reconnectCodec.decode(message.payload());
+        ChannelConnector connector = message.getFrom();
+
+        try {
+            handler.reconnect(connector);
+            connector.reconnect(new InetSocketAddress(new String(reconnectPackage.host), reconnectPackage.port));
+            handler.bind(connector);
+        } catch (IOException | AuthenticationException e) {
+            log.error("Couldn't reconnect to new socket({}, {})",
+                    new String(reconnectPackage.host),
+                    reconnectPackage.port,
+                    e);
+        }
     }
 
     @Override

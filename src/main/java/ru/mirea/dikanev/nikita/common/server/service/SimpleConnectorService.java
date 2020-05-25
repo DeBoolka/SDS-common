@@ -113,4 +113,5 @@ public class SimpleConnectorService implements ConnectorService {
     public void clear() {
         changeRequests.clear();
     }
+
 }

@@ -28,4 +28,9 @@ public interface MessageHandler extends Runnable {
 
     Selector selector();
 
+    void closeConnection(ChannelConnector connector);
+
+    void reconnect(ChannelConnector connector);
+
+    boolean contains(ChannelConnector connector);
 }

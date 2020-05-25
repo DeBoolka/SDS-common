@@ -25,4 +25,5 @@ public interface ConnectorService {
     void changeOps(SelectableChannel channel, int op);
 
     void clear();
+
 }

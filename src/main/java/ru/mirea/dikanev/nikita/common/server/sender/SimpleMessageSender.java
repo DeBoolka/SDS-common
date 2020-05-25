@@ -50,7 +50,7 @@ public class SimpleMessageSender implements MessageSender {
             messages.remove(0);
         }
 
-        if (messages.isEmpty()) {
+        if (messages.isEmpty() && key.isValid()) {
             key.interestOps(SelectionKey.OP_READ);
         }
     }

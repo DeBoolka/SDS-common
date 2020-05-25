@@ -1,6 +1,7 @@
 package ru.mirea.dikanev.nikita.common.server.connector;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
@@ -95,5 +96,12 @@ public class ServerDatagramChannelConnector implements ChannelConnector {
     @Override
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    @Override
+    public void reconnect(InetSocketAddress inetSocketAddress) {
+        this.address = inetSocketAddress;
+        this.operation = SelectionKey.OP_READ;
+        channel = null;
     }
 }

@@ -1,6 +1,7 @@
 package ru.mirea.dikanev.nikita.common.server.connector;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
@@ -39,4 +40,6 @@ public interface ChannelConnector {
     Optional<Client> getClient();
 
     void setClient(Client client);
+
+    void reconnect(InetSocketAddress inetSocketAddress);
 }

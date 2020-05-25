@@ -73,6 +73,21 @@ public class SimpleMessageHandler implements MessageHandler {
     }
 
     @Override
+    public void closeConnection(ChannelConnector connector) {
+        service.closeConnection(connector.getChannel().keyFor(selector), connector);
+    }
+
+    @Override
+    public void reconnect(ChannelConnector connector) {
+        service.closeConnection(connector.getChannel().keyFor(selector), connector.getChannel());
+    }
+
+    @Override
+    public boolean contains(ChannelConnector connector) {
+        return connector.getChannel().keyFor(selector) != null;
+    }
+
+    @Override
     public void bind(ChannelConnector connector) throws IOException, AuthenticationException {
         if (isRunning()) {
             service.bind(connector);
