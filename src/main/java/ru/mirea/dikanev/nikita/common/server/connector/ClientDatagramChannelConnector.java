@@ -137,4 +137,14 @@ public  class ClientDatagramChannelConnector implements ChannelConnector {
         operation = ChangeOpsRequest.OP_READ_WRITE;
         channel = null;
     }
+
+    @Override
+    public boolean isAccepting() {
+        return false;
+    }
+
+    @Override
+    public InetSocketAddress getLocalAddress() {
+        return null;
+    }
 }

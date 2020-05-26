@@ -42,4 +42,8 @@ public interface ChannelConnector {
     void setClient(Client client);
 
     void reconnect(InetSocketAddress inetSocketAddress);
+
+    boolean isAccepting();
+
+    InetSocketAddress getLocalAddress();
 }

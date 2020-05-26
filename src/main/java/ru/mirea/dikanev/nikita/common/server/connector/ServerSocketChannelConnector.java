@@ -20,17 +20,17 @@ import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
 public class ServerSocketChannelConnector implements ChannelConnector {
 
     private ServerSocketChannel channel;
-    private SocketAddress socketAddress;
+    private InetSocketAddress socketAddress;
     private Client client;
 
     private int operation;
 
-    public ServerSocketChannelConnector(SocketAddress address, int op) {
+    public ServerSocketChannelConnector(InetSocketAddress address, int op) {
         operation = op;
         socketAddress = address;
     }
 
-    public ServerSocketChannelConnector(SocketAddress address) {
+    public ServerSocketChannelConnector(InetSocketAddress address) {
         this(address, SelectionKey.OP_ACCEPT);
     }
 
@@ -105,6 +105,16 @@ public class ServerSocketChannelConnector implements ChannelConnector {
     public void reconnect(InetSocketAddress inetSocketAddress) {
         channel = null;
         socketAddress = inetSocketAddress;
+    }
+
+    @Override
+    public boolean isAccepting() {
+        return true;
+    }
+
+    @Override
+    public InetSocketAddress getLocalAddress() {
+        return socketAddress;
     }
 
 }

@@ -96,6 +96,11 @@ public class SimpleClientService implements ClientService {
         return client != null && sessions.containsKey(client.getId());
     }
 
+    @Override
+    public Map<Integer, SessionInfo> getClients() {
+        return sessions;
+    }
+
     private Client createSession(Client client) throws AuthenticationException {
         if (client == null || client.getCredentials() == null) {
             return new UnauthenticatedClient();
@@ -149,7 +154,7 @@ public class SimpleClientService implements ClientService {
     @Data
     @AllArgsConstructor
     @RequiredArgsConstructor
-    private static class SessionInfo {
+    public static class SessionInfo {
         private Client client;
         private Point position;
     }

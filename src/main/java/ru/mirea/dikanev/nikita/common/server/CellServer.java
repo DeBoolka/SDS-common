@@ -1,9 +1,11 @@
 package ru.mirea.dikanev.nikita.common.server;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.stream.IntStream;
 
+import ru.mirea.dikanev.nikita.common.math.Rectangle;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.exception.HandlerInternalException;
 import ru.mirea.dikanev.nikita.common.server.handler.CellHandler;
@@ -14,9 +16,9 @@ public class CellServer extends SimpleMessageServer {
     private CellServer() {
     }
 
-    public static CellServer create(int nMessageProcessors, int nHandlers) {
+    public static CellServer create(int nMessageProcessors, int nHandlers, Rectangle rectangle) {
         CellServer server = new CellServer();
-        CellMessageProcessor processor = new CellMessageProcessor(server, nMessageProcessors);
+        CellMessageProcessor processor = new CellMessageProcessor(server, nMessageProcessors, rectangle);
 
         server.processor(processor);
         server.handlers(IntStream.range(0, nHandlers)
@@ -32,14 +34,14 @@ public class CellServer extends SimpleMessageServer {
         return server;
     }
 
-    public CellHandler bindServer(SocketAddress address) throws IOException, AuthenticationException {
+    public CellHandler bindServer(InetSocketAddress address) throws IOException, AuthenticationException {
         CellHandler handler = (CellHandler) balanceHandlers();
         handler.bindServer(address);
 
         return handler;
     }
 
-    public CellHandler bindClient(SocketAddress address) throws IOException, AuthenticationException {
+    public CellHandler bindClient(InetSocketAddress address) throws IOException, AuthenticationException {
         CellHandler handler = (CellHandler) balanceHandlers();
         handler.bindClient(address);
 

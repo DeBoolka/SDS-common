@@ -2,18 +2,21 @@ package ru.mirea.dikanev.nikita.common.server.processor;
 
 import java.util.Optional;
 
+import ru.mirea.dikanev.nikita.common.math.Point;
 import ru.mirea.dikanev.nikita.common.server.CellServer;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.handler.CellHandler;
+import ru.mirea.dikanev.nikita.common.server.protocol.codec.ReconnectCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.MessagePackage;
+import ru.mirea.dikanev.nikita.common.server.protocol.pack.ReconnectPackage;
 import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
 
 public class SectorMessageProcessor extends CellMessageProcessor {
 
     public SectorMessageProcessor(CellServer server, int nThreads) {
-        super(server, nThreads);
+        super(server, nThreads, null);
     }
 
     @Override
@@ -44,9 +47,14 @@ public class SectorMessageProcessor extends CellMessageProcessor {
     }
 
     @Override
-    protected void position(CellHandler handler, Message message) {
-        super.position(handler, message);
+    protected void reconnect(CellHandler handler, Message message) {
+        ReconnectPackage rcPack = reconnectCodec.decode(message.payload());
+        clientService.getClient(rcPack.userId)
+                .ifPresent(client -> handler.sendMessage(client.getChannel().getChannel(), message));
+    }
 
+    @Override
+    protected void position(CellHandler handler, Message message) {
         //send to the cell
         handler.sendMessage(message,
                 key -> ((ChannelConnector) key.attachment()).getClient()

@@ -1,5 +1,6 @@
 package ru.mirea.dikanev.nikita.common.server.connector;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 public class ChannelConnectorProvider {
@@ -11,7 +12,7 @@ public class ChannelConnectorProvider {
 
     private ChannelConnectorProvider() { }
 
-    public static ChannelConnector openServerConnector(SocketAddress address) {
+    public static ChannelConnector openServerConnector(InetSocketAddress address) {
         if (mod == UDP_MOD) {
             return new ServerDatagramChannelConnector(address);
         } else if (mod == TCP_MOD) {
@@ -20,7 +21,7 @@ public class ChannelConnectorProvider {
         throw new UnsupportedOperationException("Unsupported connector provider mod: " + mod);
     }
 
-    public static ChannelConnector openClientConnector(SocketAddress serverAddress) {
+    public static ChannelConnector openClientConnector(InetSocketAddress serverAddress) {
         if (mod == UDP_MOD) {
             return new ClientDatagramChannelConnector(serverAddress);
         } else if (mod == TCP_MOD) {

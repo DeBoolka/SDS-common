@@ -21,12 +21,12 @@ import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
 public class ServerDatagramChannelConnector implements ChannelConnector {
 
     private DatagramChannel channel;
-    private SocketAddress address;
+    private InetSocketAddress address;
     private Client client;
 
     private int operation;
 
-    public ServerDatagramChannelConnector(SocketAddress address) {
+    public ServerDatagramChannelConnector(InetSocketAddress address) {
         this.address = address;
         this.operation = SelectionKey.OP_READ;
     }
@@ -103,5 +103,15 @@ public class ServerDatagramChannelConnector implements ChannelConnector {
         this.address = inetSocketAddress;
         this.operation = SelectionKey.OP_READ;
         channel = null;
+    }
+
+    @Override
+    public boolean isAccepting() {
+        return true;
+    }
+
+    @Override
+    public InetSocketAddress getLocalAddress() {
+        return address;
     }
 }

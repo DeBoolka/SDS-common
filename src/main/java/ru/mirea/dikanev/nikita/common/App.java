@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
+import ru.mirea.dikanev.nikita.common.math.Rectangle;
 import ru.mirea.dikanev.nikita.common.server.CellManagerServer;
 import ru.mirea.dikanev.nikita.common.server.CellServer;
 import ru.mirea.dikanev.nikita.common.server.MessageServer;
@@ -46,7 +47,7 @@ public class App {
     private static void slaveDat() throws IOException, InterruptedException {
 //        MessageHandler msgHandler = new SimpleMessageHandler();
 //        MessageServer slave = new SimpleMessageServer(1, msgHandler);
-        CellServer slave = CellServer.create(1, 1);
+        CellServer slave = CellServer.create(1, 1, new Rectangle(0, 100, 100, 0));
         SocketChannelConnector channel = new SocketChannelConnector(new InetSocketAddress("127.0.0.1", 19000));
         slave.start();
         slave.bind(channel);

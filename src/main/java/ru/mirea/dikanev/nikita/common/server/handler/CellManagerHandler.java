@@ -1,6 +1,7 @@
 package ru.mirea.dikanev.nikita.common.server.handler;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 import lombok.extern.log4j.Log4j2;
@@ -21,10 +22,10 @@ public class CellManagerHandler extends SimpleMessageHandler {
     private CellManagerHandler(){
     }
 
-    public static CellManagerHandler create(MessageProcessor processor, SocketAddress... addresses)
+    public static CellManagerHandler create(MessageProcessor processor, InetSocketAddress... addresses)
             throws IOException, AuthenticationException {
         CellManagerHandler handler = buildHandler(processor);
-        for (SocketAddress address : addresses) {
+        for (InetSocketAddress address : addresses) {
             handler.bind(address);
         }
 
@@ -45,7 +46,7 @@ public class CellManagerHandler extends SimpleMessageHandler {
         return handler;
     }
 
-    public void bind(SocketAddress address) throws IOException, AuthenticationException {
+    public void bind(InetSocketAddress address) throws IOException, AuthenticationException {
         super.bind(ChannelConnectorProvider.openServerConnector(address));
     }
 }

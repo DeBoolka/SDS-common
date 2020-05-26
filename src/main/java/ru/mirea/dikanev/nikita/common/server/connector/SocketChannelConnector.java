@@ -103,4 +103,14 @@ public class SocketChannelConnector implements ChannelConnector {
         address = inetSocketAddress;
         channel = null;
     }
+
+    @Override
+    public boolean isAccepting() {
+        return false;
+    }
+
+    @Override
+    public InetSocketAddress getLocalAddress() {
+        return null;
+    }
 }

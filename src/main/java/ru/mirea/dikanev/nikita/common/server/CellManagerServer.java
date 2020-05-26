@@ -1,6 +1,7 @@
 package ru.mirea.dikanev.nikita.common.server;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.stream.IntStream;
 
@@ -32,7 +33,7 @@ public class CellManagerServer extends SimpleMessageServer {
         return server;
     }
 
-    public CellManagerHandler bind(SocketAddress address) throws IOException, AuthenticationException {
+    public CellManagerHandler bind(InetSocketAddress address) throws IOException, AuthenticationException {
         CellManagerHandler handler = (CellManagerHandler) balanceHandlers();
         handler.bind(address);
 

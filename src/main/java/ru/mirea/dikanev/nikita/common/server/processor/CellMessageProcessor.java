@@ -1,13 +1,15 @@
 package ru.mirea.dikanev.nikita.common.server.processor;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Optional;
+import java.nio.channels.SelectionKey;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Predicate;
 
+import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.math.Point;
+import ru.mirea.dikanev.nikita.common.math.Rectangle;
 import ru.mirea.dikanev.nikita.common.server.CellServer;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
@@ -24,13 +26,18 @@ import ru.mirea.dikanev.nikita.common.server.protocol.pack.MessagePackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.PositionPackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.ReconnectPackage;
 import ru.mirea.dikanev.nikita.common.server.service.ClientService;
+import ru.mirea.dikanev.nikita.common.server.service.ReconnectService;
 import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
 
 @Log4j2
+@Data
 public class CellMessageProcessor implements MessageProcessor, Codes {
+
+    protected static final double BUFFER_ZONE_NEAR_BORDERS = 100;
 
     protected CellServer server;
     protected ClientService clientService;
+    protected ReconnectService reconnectService;
 
     private ExecutorService messageTasks;
 
@@ -39,10 +46,13 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
     protected MessageCodec messageCodec = new MessageCodec();
     protected LoginCodec loginCodec = new LoginCodec();
 
-    public CellMessageProcessor(CellServer server, int nThreads) {
+    private Rectangle cellRectangle;
+
+    public CellMessageProcessor(CellServer server, int nThreads, Rectangle cellRectangle) {
         this.server = server;
         this.messageTasks = Executors.newFixedThreadPool(nThreads);
         this.clientService = new SimpleClientService();
+        this.cellRectangle = cellRectangle;
     }
 
     @Override
@@ -121,33 +131,53 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
         //TODO: make
     }
 
-    private void reconnect(CellHandler handler, Message message) {
+    protected void reconnect(CellHandler handler, Message message) {
         ReconnectPackage reconnectPackage = reconnectCodec.decode(message.payload());
-        ChannelConnector connector = message.getFrom();
-
-        try {
-            handler.reconnect(connector);
-            connector.reconnect(new InetSocketAddress(new String(reconnectPackage.host), reconnectPackage.port));
-            handler.bind(connector);
-        } catch (IOException | AuthenticationException e) {
-            log.error("Couldn't reconnect to new socket({}, {})",
-                    new String(reconnectPackage.host),
-                    reconnectPackage.port,
-                    e);
+        if (reconnectPackage.host.length != 0 && reconnectPackage.port > 0) {
+            /*try {
+                handler.reconnect(connector);
+                connector.reconnect(new InetSocketAddress(new String(reconnectPackage.host), reconnectPackage.port));
+                handler.bind(connector);
+            } catch (IOException | AuthenticationException e) {
+                log.error("Couldn't reconnect to new socket({}, {})",
+                        new String(reconnectPackage.host),
+                        reconnectPackage.port,
+                        e);
+            }
+            return;*/
+            handler.sendMessage(reconnectService.pop(reconnectPackage.userId).getChannel().getChannel(),
+                    Message.create(null, Codes.RECONNECT_ACTION, ReconnectCodec.newReconnectPack(reconnectPackage)));
+            return;
         }
+
+        ChannelConnector connector = handler.getSector(reconnectPackage.posX, reconnectPackage.posY);
+        InetSocketAddress sectorAddr = connector.getLocalAddress();
+        reconnectPackage.host = sectorAddr.getHostName().getBytes();
+        reconnectPackage.port = sectorAddr.getPort();
+        handler.sendMessage(message.getFrom().getChannel(),
+                Message.create(null, RECONNECT_ACTION, ReconnectCodec.newReconnectPack(reconnectPackage)));
     }
 
     protected void position(CellHandler handler, Message message) {
         PositionPackage posPackage = positionCodec.decode(message.payload());
-        ChannelConnector connector = message.getFrom();
-
-        Client client = connector.getClient().orElse(null);
+        Client client = message.getFrom().getClient().orElse(null);
         if (client == null) {
             return;
         }
 
-        clientService.setPosition(client.getId(), new Point(posPackage.x, posPackage.y));
-        //TODO: if the user is outside the Cell reconnect to another cell
+        Point newPoint = new Point(posPackage.x, posPackage.y);
+        if (cellRectangle.isIntersectionBufferZone(BUFFER_ZONE_NEAR_BORDERS, newPoint)) {
+            reconnectService.push(posPackage.userId, client);
+            handler.sendMessage(Message.create(null,
+                    RECONNECT_ACTION,
+                    ReconnectCodec.newReconnectPack(client.getId(), newPoint.x, newPoint.y)), onlyParentServer());
+        }
+    }
+
+    protected Predicate<SelectionKey> onlyParentServer() {
+        return key -> ((ChannelConnector) key.attachment()).getClient()
+                .map(value -> SimpleClientService.ROOT_USER_ID.equals(value.getId()))
+                .orElse(false);
     }
 
     @Override

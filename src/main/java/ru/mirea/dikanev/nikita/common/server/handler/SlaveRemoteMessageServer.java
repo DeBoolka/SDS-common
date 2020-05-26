@@ -1,5 +1,6 @@
 package ru.mirea.dikanev.nikita.common.server.handler;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 import lombok.extern.log4j.Log4j2;
@@ -9,10 +10,10 @@ import ru.mirea.dikanev.nikita.common.server.connector.SocketChannelConnector;
 @Log4j2
 public class SlaveRemoteMessageServer extends SimpleMessageHandler {
 
-    private SocketAddress masterAddress;
-    private SocketAddress slaveAddress;
+    private InetSocketAddress masterAddress;
+    private InetSocketAddress slaveAddress;
 
-    public SlaveRemoteMessageServer(SocketAddress masterAddress, SocketAddress slaveAddress) {
+    public SlaveRemoteMessageServer(InetSocketAddress masterAddress, InetSocketAddress slaveAddress) {
         this.masterAddress = masterAddress;
         this.slaveAddress = slaveAddress;
     }

@@ -1,5 +1,6 @@
 package ru.mirea.dikanev.nikita.common.server.handler;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 import lombok.extern.log4j.Log4j2;
@@ -8,9 +9,9 @@ import ru.mirea.dikanev.nikita.common.server.connector.ServerSocketChannelConnec
 @Log4j2
 public class MasterRemoteMessageHandler extends SimpleMessageHandler {
 
-    private SocketAddress address;
+    private InetSocketAddress address;
 
-    public MasterRemoteMessageHandler(SocketAddress address) {
+    public MasterRemoteMessageHandler(InetSocketAddress address) {
         this.address = address;
     }
 

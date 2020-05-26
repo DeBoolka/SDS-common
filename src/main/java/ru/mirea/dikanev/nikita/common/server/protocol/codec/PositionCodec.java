@@ -10,6 +10,7 @@ public class PositionCodec extends Codec<PositionPackage> {
 
     @Override
     public ByteBuffer encode(ByteBuffer buffer, PositionPackage positionPackage) {
+        buffer.putInt(positionPackage.userId);
         buffer.putDouble(positionPackage.x);
         buffer.putDouble(positionPackage.y);
 
@@ -18,18 +19,19 @@ public class PositionCodec extends Codec<PositionPackage> {
 
     @Override
     public PositionPackage decode(ByteBuffer buffer) {
+        int id = buffer.getInt();
         double x = buffer.getDouble();
         double y = buffer.getDouble();
 
-        return new PositionPackage(x, y);
+        return new PositionPackage(id, x, y);
     }
 
     public static int size() {
-        return Double.BYTES * 2;
+        return Double.BYTES * 2 + Integer.BYTES;
     }
 
-    public static byte[] newPositionPack(double x, double y) {
-        PositionPackage positionPackage = new PositionPackage(x, y);
+    public static byte[] newPositionPack(int id, double x, double y) {
+        PositionPackage positionPackage = new PositionPackage(id, x, y);
         ByteBuffer buffer = ByteBuffer.allocate(size());
 
         return positionCodec.encode(buffer, positionPackage).array();
