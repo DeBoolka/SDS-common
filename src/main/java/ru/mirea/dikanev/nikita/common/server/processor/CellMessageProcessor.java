@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import lombok.extern.log4j.Log4j2;
+import ru.mirea.dikanev.nikita.common.math.Point;
 import ru.mirea.dikanev.nikita.common.server.CellServer;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
@@ -16,9 +17,11 @@ import ru.mirea.dikanev.nikita.common.server.handler.CellHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.LoginCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.MessageCodec;
+import ru.mirea.dikanev.nikita.common.server.protocol.codec.PositionCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.ReconnectCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.LoginPackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.MessagePackage;
+import ru.mirea.dikanev.nikita.common.server.protocol.pack.PositionPackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.ReconnectPackage;
 import ru.mirea.dikanev.nikita.common.server.service.ClientService;
 import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
@@ -32,6 +35,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
     private ExecutorService messageTasks;
 
     protected ReconnectCodec reconnectCodec = new ReconnectCodec();
+    protected PositionCodec positionCodec = new PositionCodec();
     protected MessageCodec messageCodec = new MessageCodec();
     protected LoginCodec loginCodec = new LoginCodec();
 
@@ -65,6 +69,9 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                 return;
             case RECONNECT_ACTION:
                 reconnect(handler, message);
+                return;
+            case POSITION_ACTION:
+                position(handler, message);
                 return;
             default:
                 return;
@@ -128,6 +135,19 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                     reconnectPackage.port,
                     e);
         }
+    }
+
+    protected void position(CellHandler handler, Message message) {
+        PositionPackage posPackage = positionCodec.decode(message.payload());
+        ChannelConnector connector = message.getFrom();
+
+        Client client = connector.getClient().orElse(null);
+        if (client == null) {
+            return;
+        }
+
+        clientService.setPosition(client.getId(), new Point(posPackage.x, posPackage.y));
+        //TODO: if the user is outside the Cell reconnect to another cell
     }
 
     @Override

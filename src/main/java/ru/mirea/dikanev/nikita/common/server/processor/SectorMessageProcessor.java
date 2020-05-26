@@ -42,4 +42,15 @@ public class SectorMessageProcessor extends CellMessageProcessor {
                             .orElse(false);
                 }));
     }
+
+    @Override
+    protected void position(CellHandler handler, Message message) {
+        super.position(handler, message);
+
+        //send to the cell
+        handler.sendMessage(message,
+                key -> ((ChannelConnector) key.attachment()).getClient()
+                        .map(value -> SimpleClientService.ROOT_USER_ID.equals(value.getId()))
+                        .orElse(false));
+    }
 }

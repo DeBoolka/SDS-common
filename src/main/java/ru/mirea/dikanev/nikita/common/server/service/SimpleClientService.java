@@ -8,6 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import ru.mirea.dikanev.nikita.common.math.Point;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.entity.client.UnauthenticatedClient;
@@ -18,9 +20,10 @@ import ru.mirea.dikanev.nikita.common.server.secure.Credentials;
 public class SimpleClientService implements ClientService {
 
     public static final Integer ROOT_USER_ID = 0;
+    public static final Point DEFAULT_POSITION = new Point(0, 0);
 
     private Map<Integer, UserInfo> users = new ConcurrentHashMap<>();//TODO: replace with user storage
-    private Map<Integer, Client> sessions = new ConcurrentHashMap<>();
+    private Map<Integer, SessionInfo> sessions = new ConcurrentHashMap<>();
 
     private volatile AtomicInteger lastId = new AtomicInteger(0);
 
@@ -63,7 +66,29 @@ public class SimpleClientService implements ClientService {
 
     @Override
     public Optional<Client> getClient(int id) {
-        return Optional.ofNullable(sessions.get(id));
+        SessionInfo info = sessions.get(id);
+        if (info == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(info.client);
+    }
+
+    @Override
+    public Optional<Point> getPosition(int id) {
+        SessionInfo info = sessions.get(id);
+        if (info == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(info.position);
+    }
+
+    @Override
+    public void setPosition(int id, Point position) {
+        SessionInfo info = sessions.get(id);
+        if (info == null) {
+            return;
+        }
+        info.position = position;
     }
 
     @Override
@@ -87,7 +112,7 @@ public class SimpleClientService implements ClientService {
         }
 
         Client client = new AuthenticationClient(id);
-        sessions.put(id, client);
+        sessions.put(id, new SessionInfo(client, new Point(DEFAULT_POSITION)));
         return client;
     }
 
@@ -121,4 +146,11 @@ public class SimpleClientService implements ClientService {
 
     }
 
+    @Data
+    @AllArgsConstructor
+    @RequiredArgsConstructor
+    private static class SessionInfo {
+        private Client client;
+        private Point position;
+    }
 }

@@ -7,5 +7,6 @@ public interface Codes {
     int RESIZE_ACTION = 0x83;
     int LOGIN_ACTION = 0x84;
     int RECONNECT_ACTION = 0x85;
+    int POSITION_ACTION = 0x86;
 
 }

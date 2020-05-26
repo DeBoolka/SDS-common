@@ -2,6 +2,7 @@ package ru.mirea.dikanev.nikita.common.server.service;
 
 import java.util.Optional;
 
+import ru.mirea.dikanev.nikita.common.math.Point;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
@@ -15,6 +16,10 @@ public interface ClientService {
     void exitClient(Client client);
 
     Optional<Client> getClient(int id);
+
+    Optional<Point> getPosition(int id);
+
+    void setPosition(int id, Point position);
 
     boolean isAuth(Client client);
 }
