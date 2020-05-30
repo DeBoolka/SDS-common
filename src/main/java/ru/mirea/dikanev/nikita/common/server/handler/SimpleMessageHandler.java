@@ -147,24 +147,28 @@ public class SimpleMessageHandler implements MessageHandler {
         preparedConnectorsForBinding.clear();
     }
 
-    private void handle() throws IOException {
+    private void handle() {
         for (SelectionKey key : selector.selectedKeys()) {
-            ChannelConnector connector = (ChannelConnector) key.attachment();
+            try {
+                ChannelConnector connector = (ChannelConnector) key.attachment();
 
-            if (!key.isValid()) {
-                service.closeConnection(key, connector);
-            } else if (key.isAcceptable()) {
-                log.info("[Accept]");
-                service.accept(key, connector);;
-            } else if (key.isConnectable()) {
-                log.info("[Connect]");
-                service.connect(key, connector);
-            } else if (key.isReadable()) {
-                log.info("[Read]");
-                receiver.receive(key, connector);
-            } else if (key.isWritable()) {
-                log.info("[Write]");
-                sender.writeToChannel(key, connector);
+                if (!key.isValid()) {
+                    service.closeConnection(key, connector);
+                } else if (key.isAcceptable()) {
+                    log.info("[Accept]");
+                    service.accept(key, connector);;
+                } else if (key.isConnectable()) {
+                    log.info("[Connect]");
+                    service.connect(key, connector);
+                } else if (key.isReadable()) {
+                    log.info("[Read]");
+                    receiver.receive(key, connector);
+                } else if (key.isWritable()) {
+                    log.info("[Write]");
+                    sender.writeToChannel(key, connector);
+                }
+            } catch (Exception e) {
+                log.error("Event error:", e);
             }
         }
 

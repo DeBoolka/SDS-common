@@ -14,10 +14,12 @@ import ru.mirea.dikanev.nikita.common.server.connector.ServerSocketChannelConnec
 import ru.mirea.dikanev.nikita.common.server.connector.SocketChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
+import ru.mirea.dikanev.nikita.common.server.handler.CellManagerHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.MasterRemoteMessageHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.SimpleMessageHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.SlaveRemoteMessageServer;
+import ru.mirea.dikanev.nikita.common.server.processor.CellManagerMessageProcessor;
 import ru.mirea.dikanev.nikita.common.server.processor.Codes;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.LoginCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.MessageCodec;
@@ -33,14 +35,13 @@ public class App {
         server.bindClient(new InetSocketAddress("localhost", 18000));
         server.bindServer(new InetSocketAddress("localhost", 11000));
         server.start();*/
-//        masterDat();
-        slaveDat();
+        masterDat();
+//        slaveDat();
     }
 
     private static void masterDat() throws IOException, InterruptedException {
-        MessageServer master = new SimpleMessageServer(1, new SimpleMessageHandler());
+        CellManagerServer master = CellManagerServer.create(1, 1);
         master.start();
-        Thread.sleep(100);
         master.bind(new ServerSocketChannelConnector(new InetSocketAddress("127.0.0.1", 18000)));
     }
 
