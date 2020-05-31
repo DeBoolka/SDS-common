@@ -16,7 +16,7 @@ public class CellApp {
         CellServer server = CellServer.create(1,
                 1,
                 new InetSocketAddress("localhost", 19000),
-                new InetSocketAddress("localhost", 12000),
+                new InetSocketAddress("localhost", 13000),
                 new Rectangle(500, 500, 1000, 1000));
         server.start();
     }

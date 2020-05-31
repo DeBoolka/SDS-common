@@ -18,8 +18,8 @@ import ru.mirea.dikanev.nikita.common.server.protocol.codec.AddressCodec;
 @Log4j2
 public class CellServer extends SimpleMessageServer {
 
-    private InetSocketAddress cellManagerAddr;
-    private InetSocketAddress localServerAddr;
+    protected InetSocketAddress remoteAddr;
+    protected InetSocketAddress localServerAddr;
 
     protected CellServer() {
     }
@@ -44,7 +44,7 @@ public class CellServer extends SimpleMessageServer {
         log.info("Creating a server socket: {}", localAddress);
         server.bindServer(localAddress);
 
-        server.cellManagerAddr = cellManager;
+        server.remoteAddr = cellManager;
         server.localServerAddr = localAddress;
 
         return server;
@@ -67,6 +67,7 @@ public class CellServer extends SimpleMessageServer {
             } catch (InterruptedException ignore) {
             }
         }
+
 
         send(Message.create(null,
                 Codes.SET_ADDRESS_ACTION,

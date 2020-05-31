@@ -1,9 +1,10 @@
 package ru.mirea.dikanev.nikita.common.server.protocol.pack;
 
+import java.util.Arrays;
+
 import lombok.AllArgsConstructor;
 import lombok.ToString;
 
-@ToString
 @AllArgsConstructor
 public class MessagePackage implements NetworkPackage {
 
@@ -15,4 +16,9 @@ public class MessagePackage implements NetworkPackage {
     public int receiverId;
     public byte[] data;
 
+    @Override
+    public String toString() {
+        return "MessagePackage{" + "space=" + space + ", hop=" + hop + ", receiverId=" + receiverId + ", data=" +
+                new String(data) + '}';
+    }
 }

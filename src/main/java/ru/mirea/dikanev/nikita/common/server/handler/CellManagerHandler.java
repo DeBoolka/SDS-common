@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.AllArgsConstructor;
@@ -38,6 +39,17 @@ public class CellManagerHandler extends SimpleMessageHandler {
                 new Rectangle(WIDTH_WOLD / 2, HEIGHT_WOLD / 2, WIDTH_WOLD, 0),
                 new Rectangle(0, HEIGHT_WOLD, WIDTH_WOLD / 2, HEIGHT_WOLD / 2),
                 new Rectangle(WIDTH_WOLD / 2, HEIGHT_WOLD, WIDTH_WOLD, HEIGHT_WOLD / 2));
+    }
+
+    @Override
+    public void closeConnection(ChannelConnector connector) {
+        super.closeConnection(connector);
+        cells.remove(cells.entrySet()
+                .stream()
+                .filter(e -> e.getValue().channelConnector.equals(connector))
+                .findFirst()
+                .map(Entry::getKey)
+                .orElse(null));
     }
 
     public static CellManagerHandler create(MessageProcessor processor, InetSocketAddress... addresses)

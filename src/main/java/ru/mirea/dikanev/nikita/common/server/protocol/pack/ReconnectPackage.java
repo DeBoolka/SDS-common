@@ -1,9 +1,10 @@
 package ru.mirea.dikanev.nikita.common.server.protocol.pack;
 
+import java.util.Arrays;
+
 import lombok.AllArgsConstructor;
 import lombok.ToString;
 
-@ToString
 @AllArgsConstructor
 public class ReconnectPackage implements NetworkPackage {
 
@@ -13,4 +14,9 @@ public class ReconnectPackage implements NetworkPackage {
     public byte[] host;
     public int port;
 
+    @Override
+    public String toString() {
+        return "ReconnectPackage{" + "userId=" + userId + ", posX=" + posX + ", posY=" + posY + ", host=" +
+                new String(host) + ", port=" + port + '}';
+    }
 }

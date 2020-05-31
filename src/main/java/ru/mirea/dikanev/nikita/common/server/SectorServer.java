@@ -19,9 +19,6 @@ import ru.mirea.dikanev.nikita.common.server.protocol.codec.AddressCodec;
 @Log4j2
 public class SectorServer extends CellServer {
 
-    private InetSocketAddress cellAddr;
-    private InetSocketAddress localServerAddr;
-
     private SectorServer() {
     }
 
@@ -45,7 +42,7 @@ public class SectorServer extends CellServer {
         log.info("Creating a server socket: {}", localAddress);
         server.bindServer(localAddress);
 
-        server.cellAddr = cell;
+        server.remoteAddr = cell;
         server.localServerAddr = localAddress;
 
         return server;
@@ -56,23 +53,6 @@ public class SectorServer extends CellServer {
         handler.bindServer(address);
 
         return handler;
-    }
-
-    @Override
-    public void start() {
-        super.start();
-        //TODO: bullshit. Rewrite condition
-        while (!((SimpleMessageHandler) handlers.get(0)).isRunning()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ignore) {
-            }
-        }
-
-        send(Message.create(null,
-                Codes.SET_ADDRESS_ACTION,
-                AddressCodec.newAddressPack(localServerAddr.getHostName(), localServerAddr.getPort())));
-
     }
 
     public CellHandler bindClient(InetSocketAddress address) throws IOException, AuthenticationException {
