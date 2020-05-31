@@ -10,14 +10,16 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Optional;
 
+import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
+@Log4j2
 public class SocketChannelConnector implements ChannelConnector {
 
     private SocketChannel channel;
-    private SocketAddress address = null;
+    private InetSocketAddress address = null;
     private Client client;
 
     private int operation;
@@ -32,7 +34,7 @@ public class SocketChannelConnector implements ChannelConnector {
         this(channel, SelectionKey.OP_READ);
     }
 
-    public SocketChannelConnector(SocketAddress address) {
+    public SocketChannelConnector(InetSocketAddress address) {
         this.address = address;
         operation = SelectionKey.OP_CONNECT;
     }
@@ -61,7 +63,7 @@ public class SocketChannelConnector implements ChannelConnector {
     }
 
     @Override
-    public void onAccept(Selector selector, MessageHandler handler) {
+    public ChannelConnector onAccept(Selector selector, MessageHandler handler) {
         throw new UnsupportedOperationException("Accept event for SocketChannel is not supported");
     }
 
@@ -111,6 +113,21 @@ public class SocketChannelConnector implements ChannelConnector {
 
     @Override
     public InetSocketAddress getLocalAddress() {
+        try {
+            return (InetSocketAddress) channel.getLocalAddress();
+        } catch (IOException e) {
+            log.error(e);
+        }
+        return null;
+    }
+
+    @Override
+    public InetSocketAddress getRemoteAddress() {
+        try {
+            return (InetSocketAddress) channel.getRemoteAddress();
+        } catch (IOException e) {
+            log.error(e);
+        }
         return null;
     }
 }

@@ -11,7 +11,6 @@ import java.util.function.Predicate;
 
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
-import ru.mirea.dikanev.nikita.common.Client;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
@@ -21,8 +20,8 @@ import ru.mirea.dikanev.nikita.common.server.receiver.MessageReceiver;
 import ru.mirea.dikanev.nikita.common.server.receiver.SimpleMessageReceiver;
 import ru.mirea.dikanev.nikita.common.server.sender.MessageSender;
 import ru.mirea.dikanev.nikita.common.server.sender.SimpleMessageSender;
-import ru.mirea.dikanev.nikita.common.server.service.ConnectorService;
-import ru.mirea.dikanev.nikita.common.server.service.SimpleConnectorService;
+import ru.mirea.dikanev.nikita.common.server.service.connector.ConnectorService;
+import ru.mirea.dikanev.nikita.common.server.service.connector.SimpleConnectorService;
 
 @Log4j2
 @Data

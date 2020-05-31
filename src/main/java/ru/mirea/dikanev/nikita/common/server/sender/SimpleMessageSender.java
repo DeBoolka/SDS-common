@@ -8,16 +8,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
-import ru.mirea.dikanev.nikita.common.Client;
 import ru.mirea.dikanev.nikita.common.server.entity.ChangeOpsRequest;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
-import ru.mirea.dikanev.nikita.common.server.service.ConnectorService;
+import ru.mirea.dikanev.nikita.common.server.service.connector.ConnectorService;
 
 public class SimpleMessageSender implements MessageSender {
 

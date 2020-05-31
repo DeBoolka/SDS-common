@@ -1,4 +1,4 @@
-package ru.mirea.dikanev.nikita.common.server.service;
+package ru.mirea.dikanev.nikita.common.server.service.connector;
 
 import java.io.IOException;
 import java.nio.channels.SelectableChannel;

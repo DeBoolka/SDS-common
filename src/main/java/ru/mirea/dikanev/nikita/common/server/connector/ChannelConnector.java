@@ -20,7 +20,7 @@ public interface ChannelConnector {
 
     void bind(Selector selector, MessageHandler handler) throws IOException;
 
-    void onAccept(Selector selector, MessageHandler handler) throws IOException;
+    ChannelConnector onAccept(Selector selector, MessageHandler handler) throws IOException;
 
     void onConnect(Selector selector, MessageHandler handler) throws IOException;
 
@@ -46,4 +46,7 @@ public interface ChannelConnector {
     boolean isAccepting();
 
     InetSocketAddress getLocalAddress();
+
+    InetSocketAddress getRemoteAddress();
+
 }

@@ -2,22 +2,18 @@ package ru.mirea.dikanev.nikita.common.server.handler;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 
-import lombok.Data;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnectorProvider;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.processor.CellMessageProcessor;
-import ru.mirea.dikanev.nikita.common.server.processor.MessageProcessor;
 import ru.mirea.dikanev.nikita.common.server.receiver.MessageReceiver;
 import ru.mirea.dikanev.nikita.common.server.receiver.SimpleMessageReceiver;
 import ru.mirea.dikanev.nikita.common.server.sender.MessageSender;
 import ru.mirea.dikanev.nikita.common.server.sender.SimpleMessageSender;
-import ru.mirea.dikanev.nikita.common.server.service.ClientService;
-import ru.mirea.dikanev.nikita.common.server.service.ConnectorService;
+import ru.mirea.dikanev.nikita.common.server.service.connector.ConnectorService;
 import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
-import ru.mirea.dikanev.nikita.common.server.service.SimpleConnectorService;
+import ru.mirea.dikanev.nikita.common.server.service.connector.SimpleConnectorService;
 
 /**
  * This is Cell.

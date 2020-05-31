@@ -18,10 +18,10 @@ import ru.mirea.dikanev.nikita.common.server.processor.SimpleMessageProcessor;
 @Log4j2
 public class SimpleMessageServer implements MessageServer {
 
-    private List<MessageHandler> handlers;
-    private MessageProcessor processor;
+    protected List<MessageHandler> handlers;
+    protected MessageProcessor processor;
 
-    private ExecutorService handlersExecutor;
+    protected ExecutorService handlersExecutor;
 
     public SimpleMessageServer(int countSenders, MessageHandler... handlers) {
         processor = new SimpleMessageProcessor(this, countSenders);

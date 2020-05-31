@@ -2,7 +2,6 @@ package ru.mirea.dikanev.nikita.common.server.connector;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
@@ -13,7 +12,6 @@ import java.util.Optional;
 
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
-import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
 
@@ -59,16 +57,12 @@ public class ServerSocketChannelConnector implements ChannelConnector {
     }
 
     @Override
-    public void onAccept(Selector selector, MessageHandler handler) throws IOException {
+    public ChannelConnector onAccept(Selector selector, MessageHandler handler) throws IOException {
         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) getChannel();
 
         SocketChannel newChannel = serverSocketChannel.accept();
         System.out.println(String.format("A: %s -- %s", newChannel.getLocalAddress(), newChannel.getRemoteAddress()));
-        try {
-            handler.bind(new SocketChannelConnector(newChannel));
-        } catch (AuthenticationException ignore) {
-            newChannel.close();
-        }
+        return new SocketChannelConnector(newChannel);
     }
 
     @Override
@@ -115,6 +109,11 @@ public class ServerSocketChannelConnector implements ChannelConnector {
     @Override
     public InetSocketAddress getLocalAddress() {
         return socketAddress;
+    }
+
+    @Override
+    public InetSocketAddress getRemoteAddress() {
+        return null;
     }
 
 }

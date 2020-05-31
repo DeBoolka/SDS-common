@@ -1,5 +1,6 @@
 package ru.mirea.dikanev.nikita.common;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -13,10 +14,13 @@ import java.util.concurrent.BlockingQueue;
 
 import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.server.processor.Codes;
+import ru.mirea.dikanev.nikita.common.server.protocol.codec.AddressCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.LoginCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.MessageCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.PositionCodec;
+import ru.mirea.dikanev.nikita.common.server.protocol.codec.ReconnectCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.MessagePackage;
+import ru.mirea.dikanev.nikita.common.server.protocol.pack.ReconnectPackage;
 
 @Log4j2
 public class Client {
@@ -24,6 +28,8 @@ public class Client {
     public static final String MESSAGE_ACTION = "m";
     public static final String LOGIN_ACTION = "l";
     public static final String POSITION_ACTION = "p";
+    public static final String GET_ADDR_ACTION = "a";
+    public static final String SET_ADDR_ACTION = "s";
 
     public static final String DEFAULT_HOST = "127.0.0.1";
     public static final int PORT = 18000;
@@ -85,6 +91,12 @@ public class Client {
                             break;
                         case POSITION_ACTION:
                             queue.put(toPosition());
+                            break;
+                        case GET_ADDR_ACTION:
+                            queue.put(toGetAddr());
+                            break;
+                        case SET_ADDR_ACTION:
+                            queue.put(toSetAddr());
                             break;
                     }
                 } catch (InterruptedException e) {
@@ -159,7 +171,7 @@ public class Client {
         }
     }
 
-    private void parseMessage(byte[] copyOf) {
+    private void parseMessage(byte[] copyOf) throws IOException {
         ByteBuffer buffer = ByteBuffer.wrap(copyOf);
         int action = buffer.getInt();
         switch (action) {
@@ -172,8 +184,27 @@ public class Client {
             case Codes.POSITION_ACTION:
                 System.out.println(new PositionCodec().decode(buffer));
                 return;
+            case Codes.RECONNECT_ACTION:
+                ReconnectPackage rp = new ReconnectCodec().decode(buffer);
+                System.out.println(rp);
+                reconnect(rp);
+                return;
         }
         System.out.println("Action code is unknown: " + action);
+    }
+
+    private void reconnect(ReconnectPackage rp) throws IOException {
+        channel.keyFor(selector).cancel();
+        channel.close();
+
+        InetSocketAddress addr = new InetSocketAddress(new String(rp.host), rp.port);
+        channel = SocketChannel.open();
+        channel.configureBlocking(false);
+        channel.register(selector, SelectionKey.OP_CONNECT);
+        channel.connect(addr);
+
+        selector.wakeup();
+        System.out.println("Reconnect to " + addr);
     }
 
     private byte[] toMessage() {
@@ -220,6 +251,38 @@ public class Client {
                 return addAction(Codes.POSITION_ACTION, PositionCodec.newPositionPack(-1, 0, 1));
         }
         return addAction(Codes.POSITION_ACTION, PositionCodec.newPositionPack(-1, 0, 0));
+    }
+
+    private byte[] toGetAddr() {
+        System.out.println("x:");
+        String x = scanner.nextLine();
+        System.out.println("y:");
+        String y = scanner.nextLine();
+        if (x.isBlank()) {
+            x = "0";
+        }
+        if (y.isBlank()) {
+            y = "0";
+        }
+
+        return addAction(Codes.GET_ADDRESS_ACTION,
+                PositionCodec.newPositionPack(-1, Integer.parseInt(x), Integer.parseInt(y)));
+    }
+
+    private byte[] toSetAddr() {
+        System.out.println("host: ");
+        String host = scanner.nextLine();
+        if (host.isBlank() || host.equals("0") || host.equals("-")) {
+            host = DEFAULT_HOST;
+        }
+
+        System.out.println("port: ");
+        String port = scanner.nextLine();
+        if (port.isBlank() || port.equals("0") || port.equals("-")) {
+            port = String.valueOf(PORT);
+        }
+
+        return addAction(Codes.SET_ADDRESS_ACTION, AddressCodec.newAddressPack(host, Integer.parseInt(port)));
     }
 
     private byte[] addAction(int action, byte[] buffer) {

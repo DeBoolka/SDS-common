@@ -8,5 +8,7 @@ public interface Codes {
     int LOGIN_ACTION = 0x84;
     int RECONNECT_ACTION = 0x85;
     int POSITION_ACTION = 0x86;
+    int GET_ADDRESS_ACTION = 0x87;
+    int SET_ADDRESS_ACTION = 0x88;
 
 }

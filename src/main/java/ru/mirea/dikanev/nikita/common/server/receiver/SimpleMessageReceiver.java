@@ -9,7 +9,7 @@ import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 import ru.mirea.dikanev.nikita.common.server.processor.MessageProcessor;
-import ru.mirea.dikanev.nikita.common.server.service.ConnectorService;
+import ru.mirea.dikanev.nikita.common.server.service.connector.ConnectorService;
 
 @Log4j2
 public class SimpleMessageReceiver implements MessageReceiver {

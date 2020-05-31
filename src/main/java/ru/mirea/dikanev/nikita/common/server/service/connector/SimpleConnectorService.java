@@ -1,4 +1,4 @@
-package ru.mirea.dikanev.nikita.common.server.service;
+package ru.mirea.dikanev.nikita.common.server.service.connector;
 
 import java.io.IOException;
 import java.nio.channels.SelectableChannel;
@@ -16,14 +16,16 @@ import ru.mirea.dikanev.nikita.common.server.entity.ChangeOpsRequest;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
+import ru.mirea.dikanev.nikita.common.server.service.ClientService;
+import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
 
 @Log4j2
 public class SimpleConnectorService implements ConnectorService {
 
-    private MessageHandler handler;
-    private ClientService clientService;
+    protected MessageHandler handler;
+    protected ClientService clientService;
 
-    private final List<ChangeOpsRequest> changeRequests;
+    protected final List<ChangeOpsRequest> changeRequests;
 
     public SimpleConnectorService(MessageHandler handler) {
         this(handler, new SimpleClientService());
@@ -70,7 +72,13 @@ public class SimpleConnectorService implements ConnectorService {
 
     @Override
     public void accept(SelectionKey key, ChannelConnector connector) throws IOException {
-        connector.onAccept(handler.selector(), handler);
+        ChannelConnector newConnector = null;
+        try {
+            newConnector = connector.onAccept(handler.selector(), handler);
+            handler.bind(newConnector);
+        } catch (AuthenticationException ignore) {
+            newConnector.getChannel().close();
+        }
     }
 
     @Override

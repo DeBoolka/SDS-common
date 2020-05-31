@@ -21,6 +21,7 @@ import ru.mirea.dikanev.nikita.common.server.handler.SimpleMessageHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.SlaveRemoteMessageServer;
 import ru.mirea.dikanev.nikita.common.server.processor.CellManagerMessageProcessor;
 import ru.mirea.dikanev.nikita.common.server.processor.Codes;
+import ru.mirea.dikanev.nikita.common.server.protocol.codec.AddressCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.LoginCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.MessageCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.ReconnectCodec;
@@ -31,18 +32,21 @@ public class App {
     public static void main(String[] args) throws IOException, InterruptedException, AuthenticationException {
         System.out.println("Server has been started!");
 
-        /*CellServer server = CellServer.create(1, 1);
-        server.bindClient(new InetSocketAddress("localhost", 18000));
-        server.bindServer(new InetSocketAddress("localhost", 11000));
-        server.start();*/
-        masterDat();
+        CellServer server = CellServer.create(1, 1, new Rectangle(500, 500, 1000, 1000));
+        server.bindClient(new InetSocketAddress("localhost", 19000));
+        server.bindServer(new InetSocketAddress("localhost", 12000));
+        server.start();
+        Thread.sleep(1000);
+        server.send(Message.create(null, Codes.SET_ADDRESS_ACTION, AddressCodec.newAddressPack("localhost", 12000)));
+//        masterDat();
 //        slaveDat();
     }
 
-    private static void masterDat() throws IOException, InterruptedException {
+    private static void masterDat() throws IOException, InterruptedException, AuthenticationException {
         CellManagerServer master = CellManagerServer.create(1, 1);
         master.start();
         master.bind(new ServerSocketChannelConnector(new InetSocketAddress("127.0.0.1", 18000)));
+        master.bindCellAccepter(new ServerSocketChannelConnector(new InetSocketAddress("127.0.0.1", 19000)));
     }
 
     private static void slaveDat() throws IOException, InterruptedException {

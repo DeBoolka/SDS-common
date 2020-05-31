@@ -14,9 +14,11 @@ public class Rectangle {
     }
 
     public boolean isIntersectionBufferZone(double bufferZoneNearBorders, Point point) {
-        return point.x >= bottomRightCorner.x
-                || point.y <= bottomRightCorner.y
-                || point.x <= upperLeftCorner.x
-                || point.y >= upperLeftCorner.y;
+        return contains(point.x, point.y);
     }
+
+    public boolean contains(double x, double y) {
+        return !(x >= bottomRightCorner.x || y <= bottomRightCorner.y || x <= upperLeftCorner.x || y >= upperLeftCorner.y);
+    }
+
 }

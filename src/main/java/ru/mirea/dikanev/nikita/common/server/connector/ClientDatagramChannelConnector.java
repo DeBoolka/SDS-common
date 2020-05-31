@@ -26,17 +26,17 @@ public  class ClientDatagramChannelConnector implements ChannelConnector {
     private boolean isConfirming = false;
 
     private DatagramChannel channel;
-    private SocketAddress remoteAddress;
+    private InetSocketAddress remoteAddress;
 
     private Client client;
 
     private int operation;
 
-    public ClientDatagramChannelConnector(SocketAddress remoteAddress) {
+    public ClientDatagramChannelConnector(InetSocketAddress remoteAddress) {
         this(remoteAddress, false);
     }
 
-    public ClientDatagramChannelConnector(SocketAddress remoteAddress, boolean isConfirming) {
+    public ClientDatagramChannelConnector(InetSocketAddress remoteAddress, boolean isConfirming) {
         this.remoteAddress = remoteAddress;
         this.isConfirming = isConfirming;
         operation = ChangeOpsRequest.OP_READ_WRITE;
@@ -70,8 +70,8 @@ public  class ClientDatagramChannelConnector implements ChannelConnector {
     }
 
     @Override
-    public void onAccept(Selector selector, MessageHandler handler) throws IOException {
-
+    public ChannelConnector onAccept(Selector selector, MessageHandler handler) throws IOException {
+        return null;
     }
 
     @Override
@@ -112,7 +112,7 @@ public  class ClientDatagramChannelConnector implements ChannelConnector {
 
     private int connect(Selector selector, MessageHandler handler, ByteBuffer readBuffer) throws IOException {
         if (status == FINISHING_CONNECTION) {
-            remoteAddress = channel.receive(readBuffer);
+            remoteAddress = (InetSocketAddress) channel.receive(readBuffer);
             channel.connect(remoteAddress);
             status = READY;
             log.info("Connect: {} >> {}", channel.getLocalAddress(), channel.getRemoteAddress());
@@ -146,5 +146,10 @@ public  class ClientDatagramChannelConnector implements ChannelConnector {
     @Override
     public InetSocketAddress getLocalAddress() {
         return null;
+    }
+
+    @Override
+    public InetSocketAddress getRemoteAddress() {
+        return remoteAddress;
     }
 }

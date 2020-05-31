@@ -56,8 +56,8 @@ public class ServerDatagramChannelConnector implements ChannelConnector {
     }
 
     @Override
-    public void onAccept(Selector selector, MessageHandler handler) throws IOException {
-
+    public ChannelConnector onAccept(Selector selector, MessageHandler handler) throws IOException {
+        return null;
     }
 
     @Override
@@ -68,7 +68,7 @@ public class ServerDatagramChannelConnector implements ChannelConnector {
     @Override
     public int onRead(Selector selector, MessageHandler handler, ByteBuffer readBuffer) throws IOException {
         SocketAddress remoteAddress = channel.receive(readBuffer);
-        ClientDatagramChannelConnector clientChannel = new ClientDatagramChannelConnector(remoteAddress);
+        ClientDatagramChannelConnector clientChannel = new ClientDatagramChannelConnector((InetSocketAddress) remoteAddress);
 
         try {
             handler.bind(clientChannel);
@@ -113,5 +113,10 @@ public class ServerDatagramChannelConnector implements ChannelConnector {
     @Override
     public InetSocketAddress getLocalAddress() {
         return address;
+    }
+
+    @Override
+    public InetSocketAddress getRemoteAddress() {
+        return null;
     }
 }

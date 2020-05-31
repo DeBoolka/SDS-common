@@ -2,12 +2,14 @@ package ru.mirea.dikanev.nikita.common.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
+import java.util.Arrays;
 import java.util.stream.IntStream;
 
+import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.exception.HandlerInternalException;
 import ru.mirea.dikanev.nikita.common.server.handler.CellManagerHandler;
+import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 import ru.mirea.dikanev.nikita.common.server.processor.CellManagerMessageProcessor;
 
 public class CellManagerServer extends SimpleMessageServer {
@@ -40,4 +42,16 @@ public class CellManagerServer extends SimpleMessageServer {
         return handler;
     }
 
+    public CellManagerHandler bindCellAccepter(ChannelConnector connector) throws IOException, AuthenticationException {
+        CellManagerHandler handler = (CellManagerHandler) balanceHandlers();
+        handler.cellBind(connector);
+
+        return handler;
+    }
+
+    @Override
+    public CellManagerServer handlers(MessageHandler... handlers) {
+        super.handlers = Arrays.asList(handlers);
+        return this;
+    }
 }
