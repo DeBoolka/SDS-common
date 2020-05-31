@@ -10,12 +10,14 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Optional;
 
+import lombok.ToString;
 import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 
 @Log4j2
+@ToString
 public class SocketChannelConnector implements ChannelConnector {
 
     private SocketChannel channel;

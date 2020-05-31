@@ -2,6 +2,8 @@ package ru.mirea.dikanev.nikita.common.server.handler;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnectorProvider;
@@ -11,14 +13,16 @@ import ru.mirea.dikanev.nikita.common.server.receiver.MessageReceiver;
 import ru.mirea.dikanev.nikita.common.server.receiver.SimpleMessageReceiver;
 import ru.mirea.dikanev.nikita.common.server.sender.MessageSender;
 import ru.mirea.dikanev.nikita.common.server.sender.SimpleMessageSender;
-import ru.mirea.dikanev.nikita.common.server.service.connector.ConnectorService;
 import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
+import ru.mirea.dikanev.nikita.common.server.service.connector.ConnectorService;
 import ru.mirea.dikanev.nikita.common.server.service.connector.SimpleConnectorService;
 
 /**
  * This is Cell.
  */
 public class CellHandler extends SimpleMessageHandler {
+
+    private Map<ChannelConnector, InetSocketAddress> sectors = new ConcurrentHashMap<>();
 
     private CellHandler(){
     }
@@ -41,6 +45,16 @@ public class CellHandler extends SimpleMessageHandler {
         return handler;
     }
 
+    @Override
+    public void closeConnection(ChannelConnector connector) {
+        sectors.remove(connector);
+        super.closeConnection(connector);
+    }
+
+    public void setSector(ChannelConnector connector, InetSocketAddress address) {
+        sectors.put(connector, address);
+    }
+
     public void bindServer(InetSocketAddress address) throws IOException, AuthenticationException {
         super.bind(ChannelConnectorProvider.openServerConnector(address));
     }
@@ -60,5 +74,9 @@ public class CellHandler extends SimpleMessageHandler {
                 .findAny()
                 .map(si -> si.getClient().getChannel())
                 .orElse(null);
+    }
+
+    public InetSocketAddress getAddrSector(double x, double y) {
+        return sectors.values().stream().findAny().orElse(null);
     }
 }

@@ -17,10 +17,12 @@ import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.handler.CellHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
+import ru.mirea.dikanev.nikita.common.server.protocol.codec.AddressCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.LoginCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.MessageCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.PositionCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.ReconnectCodec;
+import ru.mirea.dikanev.nikita.common.server.protocol.pack.AddressPackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.LoginPackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.MessagePackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.PositionPackage;
@@ -43,6 +45,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
 
     protected ReconnectCodec reconnectCodec = new ReconnectCodec();
     protected PositionCodec positionCodec = new PositionCodec();
+    protected AddressCodec addressCodec = new AddressCodec();
     protected MessageCodec messageCodec = new MessageCodec();
     protected LoginCodec loginCodec = new LoginCodec();
 
@@ -82,6 +85,12 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                 return;
             case POSITION_ACTION:
                 position(handler, message);
+                return;
+            case SET_ADDRESS_ACTION:
+                setSectorAddr(handler, message);
+                return;
+            case GET_ADDRESS_ACTION:
+                getSectorAddr(handler, message);
                 return;
             default:
                 return;
@@ -172,6 +181,33 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                     RECONNECT_ACTION,
                     ReconnectCodec.newReconnectPack(client.getId(), newPoint.x, newPoint.y)), onlyParentServer());
         }
+    }
+
+    private void setSectorAddr(CellHandler handler, Message message) {
+        AddressPackage addrPack = addressCodec.decode(message.payload());
+
+        InetSocketAddress addr = new InetSocketAddress(new String(addrPack.host), addrPack.port);
+        handler.setSector(message.getFrom(), addr);
+        log.info("Sector addr was added for {}: {}", message.getFrom(), addr);
+    }
+
+    private void getSectorAddr(CellHandler handler, Message message) {
+        PositionPackage posPack = positionCodec.decode(message.payload());
+        InetSocketAddress addr = handler.getAddrSector(posPack.x, posPack.y);
+        if (addr == null) {
+            handler.sendMessage(message.getFrom().getChannel(),
+                    Message.send(message.getFrom(), "Server was not found"));
+            return;
+        }
+
+        handler.sendMessage(message.getFrom().getChannel(),
+                Message.create(null,
+                        Codes.RECONNECT_ACTION,
+                        ReconnectCodec.newReconnectPack(posPack.userId,
+                                posPack.x,
+                                posPack.y,
+                                addr.getHostName().getBytes(),
+                                addr.getPort())));
     }
 
     protected Predicate<SelectionKey> onlyParentServer() {

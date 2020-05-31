@@ -13,38 +13,39 @@ import ru.mirea.dikanev.nikita.common.server.handler.CellHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.SimpleMessageHandler;
 import ru.mirea.dikanev.nikita.common.server.processor.CellMessageProcessor;
 import ru.mirea.dikanev.nikita.common.server.processor.Codes;
+import ru.mirea.dikanev.nikita.common.server.processor.SectorMessageProcessor;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.AddressCodec;
 
 @Log4j2
-public class CellServer extends SimpleMessageServer {
+public class SectorServer extends CellServer {
 
-    private InetSocketAddress cellManagerAddr;
+    private InetSocketAddress cellAddr;
     private InetSocketAddress localServerAddr;
 
-    protected CellServer() {
+    private SectorServer() {
     }
 
-    public static CellServer create(int nMessageProcessors, int nHandlers, InetSocketAddress cellManager,
-            InetSocketAddress localAddress, Rectangle rectangle) throws IOException, AuthenticationException {
+    public static SectorServer create(int nMessageProcessors, int nHandlers, InetSocketAddress cell,
+            InetSocketAddress localAddress) throws IOException, AuthenticationException {
 
-        CellServer server = new CellServer();
-        CellMessageProcessor processor = new CellMessageProcessor(server, nMessageProcessors, rectangle);
+        SectorServer server = new SectorServer();
+        SectorMessageProcessor processor = new SectorMessageProcessor(server, nMessageProcessors);
 
         server.processor(processor);
         server.handlers(IntStream.range(0, nHandlers).mapToObj(i -> {
             try {
                 return CellHandler.create(processor);
             } catch (IOException e) {
-                throw new HandlerInternalException("Created Cell handler failed", e);
+                throw new HandlerInternalException("Created Sector handler failed", e);
             }
         }).toArray(CellHandler[]::new));
 
-        log.info("Connecting to Cell Manager: {}", cellManager);
-        server.bindClient(cellManager);
+        log.info("Connecting to Cell: {}", cell);
+        server.bindClient(cell);
         log.info("Creating a server socket: {}", localAddress);
         server.bindServer(localAddress);
 
-        server.cellManagerAddr = cellManager;
+        server.cellAddr = cell;
         server.localServerAddr = localAddress;
 
         return server;

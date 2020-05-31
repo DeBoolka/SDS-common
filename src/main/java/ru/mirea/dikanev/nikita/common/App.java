@@ -2,26 +2,16 @@ package ru.mirea.dikanev.nikita.common;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 
 import ru.mirea.dikanev.nikita.common.math.Rectangle;
 import ru.mirea.dikanev.nikita.common.server.CellManagerServer;
 import ru.mirea.dikanev.nikita.common.server.CellServer;
-import ru.mirea.dikanev.nikita.common.server.MessageServer;
-import ru.mirea.dikanev.nikita.common.server.SimpleMessageServer;
-import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
+import ru.mirea.dikanev.nikita.common.server.SectorServer;
 import ru.mirea.dikanev.nikita.common.server.connector.ServerSocketChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.connector.SocketChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
-import ru.mirea.dikanev.nikita.common.server.handler.CellManagerHandler;
-import ru.mirea.dikanev.nikita.common.server.handler.MasterRemoteMessageHandler;
-import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
-import ru.mirea.dikanev.nikita.common.server.handler.SimpleMessageHandler;
-import ru.mirea.dikanev.nikita.common.server.handler.SlaveRemoteMessageServer;
-import ru.mirea.dikanev.nikita.common.server.processor.CellManagerMessageProcessor;
 import ru.mirea.dikanev.nikita.common.server.processor.Codes;
-import ru.mirea.dikanev.nikita.common.server.protocol.codec.AddressCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.LoginCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.MessageCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.ReconnectCodec;
@@ -30,14 +20,16 @@ import ru.mirea.dikanev.nikita.common.server.protocol.pack.MessagePackage;
 public class App {
 
     public static void main(String[] args) throws IOException, InterruptedException, AuthenticationException {
-        System.out.println("Server has been started!");
+        System.out.println("Server is starting!");
 
-        CellServer server = CellServer.create(1, 1, new Rectangle(500, 500, 1000, 1000));
-        server.bindClient(new InetSocketAddress("localhost", 19000));
-        server.bindServer(new InetSocketAddress("localhost", 12000));
+        CellServer server = CellServer.create(1,
+                1,
+                new InetSocketAddress("localhost", 19000),
+                new InetSocketAddress("localhost", 12000),
+                new Rectangle(500, 500, 1000, 1000));
         server.start();
-        Thread.sleep(1000);
-        server.send(Message.create(null, Codes.SET_ADDRESS_ACTION, AddressCodec.newAddressPack("localhost", 12000)));
+//        Thread.sleep(1000);
+//        server.send(Message.create(null, Codes.SET_ADDRESS_ACTION, AddressCodec.newAddressPack("localhost", 12000)));
 //        masterDat();
 //        slaveDat();
     }
@@ -49,10 +41,10 @@ public class App {
         master.bindCellAccepter(new ServerSocketChannelConnector(new InetSocketAddress("127.0.0.1", 19000)));
     }
 
-    private static void slaveDat() throws IOException, InterruptedException {
+    private static void slaveDat() throws IOException, InterruptedException, AuthenticationException {
 //        MessageHandler msgHandler = new SimpleMessageHandler();
 //        MessageServer slave = new SimpleMessageServer(1, msgHandler);
-        CellServer slave = CellServer.create(1, 1, new Rectangle(0, 100, 100, 0));
+        CellServer slave = SectorServer.create(1, 1,null, null, new Rectangle(0, 100, 100, 0));
         SocketChannelConnector channel = new SocketChannelConnector(new InetSocketAddress("127.0.0.1", 19000));
         slave.start();
         slave.bind(channel);
