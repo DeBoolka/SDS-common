@@ -13,7 +13,7 @@ import java.util.Optional;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
-import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
+import ru.mirea.dikanev.nikita.common.server.service.client.SimpleClientService;
 
 public class ServerSocketChannelConnector implements ChannelConnector {
 

@@ -1,4 +1,4 @@
-package ru.mirea.dikanev.nikita.common.server.service;
+package ru.mirea.dikanev.nikita.common.server.service.client;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

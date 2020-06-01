@@ -12,5 +12,6 @@ public interface Codes {
     int SET_ADDRESS_ACTION = 0x88;
     int SET_RECTANGLE_ACTION = 0x89;
     int GET_RECTANGLE_ACTION = 0x90;
+    int SET_STATE_ACTION = 0x91;
 
 }

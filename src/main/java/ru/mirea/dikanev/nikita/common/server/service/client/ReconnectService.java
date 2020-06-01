@@ -1,4 +1,4 @@
-package ru.mirea.dikanev.nikita.common.server.service;
+package ru.mirea.dikanev.nikita.common.server.service.client;
 
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;

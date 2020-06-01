@@ -16,8 +16,8 @@ import ru.mirea.dikanev.nikita.common.server.entity.ChangeOpsRequest;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
-import ru.mirea.dikanev.nikita.common.server.service.ClientService;
-import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
+import ru.mirea.dikanev.nikita.common.server.service.client.ClientService;
+import ru.mirea.dikanev.nikita.common.server.service.client.SimpleClientService;
 
 @Log4j2
 public class SimpleConnectorService implements ConnectorService {

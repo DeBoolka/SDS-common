@@ -8,8 +8,10 @@ import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.handler.CellHandler;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.MessagePackage;
+import ru.mirea.dikanev.nikita.common.server.protocol.pack.PositionPackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.ReconnectPackage;
-import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
+import ru.mirea.dikanev.nikita.common.server.service.client.ClientService;
+import ru.mirea.dikanev.nikita.common.server.service.client.SimpleClientService;
 
 public class SectorMessageProcessor extends CellMessageProcessor {
 
@@ -58,5 +60,25 @@ public class SectorMessageProcessor extends CellMessageProcessor {
                 key -> ((ChannelConnector) key.attachment()).getClient()
                         .map(value -> SimpleClientService.ROOT_USER_ID.equals(value.getId()))
                         .orElse(false));
+    }
+
+    @Override
+    protected void setState(CellHandler handler, Message message) {
+        int id = message.getFrom().getClient().map(Client::getId).orElse(-1);
+        if (id == -1) {
+            return;
+        } else if (id == SimpleClientService.ROOT_USER_ID) {
+            PositionPackage posPack = positionCodec.decode(message.payload());
+            handler.sendMessage(clientService.getClient(posPack.userId).get().getChannel().getChannel(), message);
+            return;
+        }
+
+        super.setState(handler, message);
+        handler.sendMessage(message,
+                key -> ((ChannelConnector) key.attachment()).getClient()
+                        .map(client -> SimpleClientService.ROOT_USER_ID.equals(client.getId()))
+                        .orElse(false));
+
+        handler.sendMessage(message.getFrom().getChannel(), Message.send(null, "State has been set"));
     }
 }

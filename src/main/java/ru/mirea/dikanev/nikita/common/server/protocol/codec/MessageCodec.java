@@ -36,8 +36,12 @@ public class MessageCodec extends Codec<MessagePackage> {
         return Short.BYTES + (Integer.BYTES * 2) + stringBytes(messagePackage.data);
     }
 
-    public static byte[] newByteMessagePack(short space, String text) {
-        MessagePackage messagePackage = newMessagePack(space, text);
+    public static byte[] newByteMessagePack(short space, String text){
+        return newByteMessagePack(space, -1, text);
+    }
+
+    public static byte[] newByteMessagePack(short space, int receiverId, String text) {
+        MessagePackage messagePackage = newMessagePack(space, receiverId, text);
         ByteBuffer buffer = ByteBuffer.allocate(size(messagePackage));
 
         return messageCodec.encode(buffer, messagePackage).array();
@@ -48,6 +52,10 @@ public class MessageCodec extends Codec<MessagePackage> {
     }
 
     public static MessagePackage newMessagePack(short space, String text) {
-        return new MessagePackage(space, 0,0, text.getBytes());
+        return newMessagePack(space, -1, text);
+    }
+
+    public static MessagePackage newMessagePack(short space, int receiverId, String text) {
+        return new MessagePackage(space, 0,receiverId, text.getBytes());
     }
 }

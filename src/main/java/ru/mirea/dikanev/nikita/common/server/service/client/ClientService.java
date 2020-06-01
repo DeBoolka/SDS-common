@@ -1,4 +1,4 @@
-package ru.mirea.dikanev.nikita.common.server.service;
+package ru.mirea.dikanev.nikita.common.server.service.client;
 
 import java.util.Map;
 import java.util.Optional;
@@ -7,7 +7,7 @@ import ru.mirea.dikanev.nikita.common.math.Point;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
-import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService.SessionInfo;
+import ru.mirea.dikanev.nikita.common.server.service.client.SimpleClientService.SessionInfo;
 
 public interface ClientService {
 

@@ -1,4 +1,4 @@
-package ru.mirea.dikanev.nikita.common.server.service;
+package ru.mirea.dikanev.nikita.common.server.service.client;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -93,7 +93,8 @@ public class SimpleClientService implements ClientService {
 
     @Override
     public boolean isAuth(Client client) {
-        return client != null && sessions.containsKey(client.getId());
+        return client != null &&
+                (client.getId() == SimpleClientService.ROOT_USER_ID || sessions.containsKey(client.getId()));
     }
 
     @Override

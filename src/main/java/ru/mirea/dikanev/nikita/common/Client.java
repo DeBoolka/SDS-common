@@ -13,6 +13,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import lombok.extern.log4j.Log4j2;
+import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.processor.Codes;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.AddressCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.LoginCodec;
@@ -29,7 +30,8 @@ public class Client {
     public static final String LOGIN_ACTION = "l";
     public static final String POSITION_ACTION = "p";
     public static final String GET_ADDR_ACTION = "a";
-    public static final String SET_ADDR_ACTION = "s";
+    public static final String SET_ADDR_ACTION = "sa";
+    public static final String SET_STATE_ACTION = "ss";
 
     public static final String DEFAULT_HOST = "127.0.0.1";
     public static final int PORT = 18000;
@@ -39,6 +41,8 @@ public class Client {
     private ByteBuffer buffer = ByteBuffer.allocate(1000);
 
     BlockingQueue<byte[]> queue = new ArrayBlockingQueue<>(2);
+
+    int id = -1;
 
     private Scanner scanner;
 
@@ -98,6 +102,9 @@ public class Client {
                         case SET_ADDR_ACTION:
                             queue.put(toSetAddr());
                             break;
+                            case SET_STATE_ACTION:
+                            queue.put(toSetState());
+                            break;
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -145,7 +152,17 @@ public class Client {
                         break;
                     }
                     log.info("New message from server");
-                    parseMessage(Arrays.copyOf(buffer.array(), numRead));
+
+                    buffer.rewind();
+                    byte[] gottenData = buffer.array();
+                    while (buffer.position() < numRead) {
+                        int len = buffer.getInt();
+                        byte[] messageCopy = new byte[len];
+                        System.arraycopy(gottenData, buffer.position(), messageCopy, 0, len);
+                        buffer.position(len + buffer.position());
+
+                        parseMessage(messageCopy);
+                    }
 
                 } else if (sKey.isWritable()) {
                     log.info("[writable]");
@@ -161,7 +178,12 @@ public class Client {
                             break;
                         }
 
-                        channel.write(ByteBuffer.wrap(line));
+                        ByteBuffer writeBuffer = ByteBuffer.allocate(line.length + Integer.BYTES);
+                        writeBuffer.putInt(line.length);
+                        writeBuffer.put(line);
+                        writeBuffer.flip();
+
+                        channel.write(writeBuffer);
                     }
 
                     // Ждем записи в канал
@@ -179,9 +201,12 @@ public class Client {
                 System.out.println(new MessageCodec().decode(buffer));
                 return;
             case Codes.LOGIN_ACTION:
-                System.out.println(new LoginCodec().decode(buffer));
+                MessagePackage m = new MessageCodec().decode(buffer);
+                System.out.println(m);
+                id = m.receiverId;
                 return;
             case Codes.POSITION_ACTION:
+            case Codes.SET_STATE_ACTION:
                 System.out.println(new PositionCodec().decode(buffer));
                 return;
             case Codes.RECONNECT_ACTION:
@@ -242,15 +267,15 @@ public class Client {
 
         switch (direction.toLowerCase().charAt(0)) {
             case 'a':
-                return addAction(Codes.POSITION_ACTION, PositionCodec.newPositionPack(-1, -1, 0));
+                return addAction(Codes.POSITION_ACTION, PositionCodec.newPositionPack(id, -1, 0));
             case 's':
-                return addAction(Codes.POSITION_ACTION, PositionCodec.newPositionPack(-1, 0, -1));
+                return addAction(Codes.POSITION_ACTION, PositionCodec.newPositionPack(id, 0, -1));
             case 'd':
-                return addAction(Codes.POSITION_ACTION, PositionCodec.newPositionPack(-1, 1, 0));
+                return addAction(Codes.POSITION_ACTION, PositionCodec.newPositionPack(id, 1, 0));
             case 'w':
-                return addAction(Codes.POSITION_ACTION, PositionCodec.newPositionPack(-1, 0, 1));
+                return addAction(Codes.POSITION_ACTION, PositionCodec.newPositionPack(id, 0, 1));
         }
-        return addAction(Codes.POSITION_ACTION, PositionCodec.newPositionPack(-1, 0, 0));
+        return addAction(Codes.POSITION_ACTION, PositionCodec.newPositionPack(id, 0, 0));
     }
 
     private byte[] toGetAddr() {
@@ -266,7 +291,7 @@ public class Client {
         }
 
         return addAction(Codes.GET_ADDRESS_ACTION,
-                PositionCodec.newPositionPack(-1, Integer.parseInt(x), Integer.parseInt(y)));
+                PositionCodec.newPositionPack(id, Integer.parseInt(x), Integer.parseInt(y)));
     }
 
     private byte[] toSetAddr() {
@@ -283,6 +308,22 @@ public class Client {
         }
 
         return addAction(Codes.SET_ADDRESS_ACTION, AddressCodec.newAddressPack(host, Integer.parseInt(port)));
+    }
+
+    private byte[] toSetState() {
+        System.out.println("x:");
+        String x = scanner.nextLine();
+        System.out.println("y:");
+        String y = scanner.nextLine();
+        if (x.isBlank()) {
+            x = "0";
+        }
+        if (y.isBlank()) {
+            y = "0";
+        }
+
+        return addAction(Codes.SET_STATE_ACTION,
+                PositionCodec.newPositionPack(id, Integer.parseInt(x), Integer.parseInt(y)));
     }
 
     private byte[] addAction(int action, byte[] buffer) {

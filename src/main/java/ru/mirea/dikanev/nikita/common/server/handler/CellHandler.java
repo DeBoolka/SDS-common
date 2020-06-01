@@ -16,7 +16,7 @@ import ru.mirea.dikanev.nikita.common.server.receiver.MessageReceiver;
 import ru.mirea.dikanev.nikita.common.server.receiver.SimpleMessageReceiver;
 import ru.mirea.dikanev.nikita.common.server.sender.MessageSender;
 import ru.mirea.dikanev.nikita.common.server.sender.SimpleMessageSender;
-import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
+import ru.mirea.dikanev.nikita.common.server.service.client.SimpleClientService;
 import ru.mirea.dikanev.nikita.common.server.service.connector.ConnectorService;
 import ru.mirea.dikanev.nikita.common.server.service.connector.SimpleConnectorService;
 
