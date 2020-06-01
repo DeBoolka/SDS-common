@@ -30,6 +30,7 @@ public class Client {
     public static final String LOGIN_ACTION = "l";
     public static final String POSITION_ACTION = "p";
     public static final String GET_ADDR_ACTION = "a";
+    public static final String GET_SECTOR_ADDR_ACTION = "as";
     public static final String SET_ADDR_ACTION = "sa";
     public static final String SET_STATE_ACTION = "ss";
 
@@ -98,6 +99,9 @@ public class Client {
                             break;
                         case GET_ADDR_ACTION:
                             queue.put(toGetAddr());
+                            break;
+                        case GET_SECTOR_ADDR_ACTION:
+                            queue.put(toGetSectorAddr());
                             break;
                         case SET_ADDR_ACTION:
                             queue.put(toSetAddr());
@@ -291,6 +295,22 @@ public class Client {
         }
 
         return addAction(Codes.GET_ADDRESS_ACTION,
+                PositionCodec.newPositionPack(id, Integer.parseInt(x), Integer.parseInt(y)));
+    }
+
+    private byte[] toGetSectorAddr() {
+        System.out.println("x:");
+        String x = scanner.nextLine();
+        System.out.println("y:");
+        String y = scanner.nextLine();
+        if (x.isBlank()) {
+            x = "0";
+        }
+        if (y.isBlank()) {
+            y = "0";
+        }
+
+        return addAction(Codes.GET_SECTOR_ADDRESS_ACTION,
                 PositionCodec.newPositionPack(id, Integer.parseInt(x), Integer.parseInt(y)));
     }
 

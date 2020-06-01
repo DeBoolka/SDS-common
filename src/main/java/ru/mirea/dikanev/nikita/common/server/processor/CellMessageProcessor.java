@@ -35,6 +35,7 @@ import ru.mirea.dikanev.nikita.common.server.service.SimplePlayerService;
 import ru.mirea.dikanev.nikita.common.server.service.client.ClientService;
 import ru.mirea.dikanev.nikita.common.server.service.client.ReconnectService;
 import ru.mirea.dikanev.nikita.common.server.service.client.SimpleClientService;
+import ru.mirea.dikanev.nikita.common.server.service.client.SimpleReconnectService;
 
 @Log4j2
 @Data
@@ -60,6 +61,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
     public CellMessageProcessor(CellServer server, int nThreads) {
         this.server = server;
         this.messageTasks = Executors.newFixedThreadPool(nThreads);
+        this.reconnectService = new SimpleReconnectService();
         this.clientService = new SimpleClientService();
         this.playerService = new SimplePlayerService();
     }
@@ -67,8 +69,12 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
     @Override
     public void process(MessageHandler handler, Message message) {
         messageTasks.submit(() -> {
-            int actionCode = message.getAction();
-            action((CellHandler) handler, actionCode, message);
+            try {
+                int actionCode = message.getAction();
+                action((CellHandler) handler, actionCode, message);
+            } catch (Exception e) {
+                log.error("Process has failed", e);
+            }
         });
     }
 
@@ -187,7 +193,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
         if (cellRectangle.isIntersectionBufferZone(BUFFER_ZONE_NEAR_BORDERS, position)) {
             reconnectService.push(posPackage.userId, client);
             handler.sendMessage(Message.create(null,
-                    GET_ADDRESS_ACTION,
+                    GET_SECTOR_ADDRESS_ACTION,
                     PositionCodec.newPositionPack(posPackage.userId, position.x, position.y)), onlyParentServer());
         }
     }

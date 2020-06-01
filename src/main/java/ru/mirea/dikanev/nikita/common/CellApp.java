@@ -3,9 +3,7 @@ package ru.mirea.dikanev.nikita.common;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import ru.mirea.dikanev.nikita.common.math.Rectangle;
 import ru.mirea.dikanev.nikita.common.server.CellServer;
-import ru.mirea.dikanev.nikita.common.server.SectorServer;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 
 public class CellApp {

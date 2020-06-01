@@ -15,7 +15,7 @@ public class SectorApp {
         SectorServer server = SectorServer.create(1,
                 1,
                 new InetSocketAddress("localhost", 14000),
-                new InetSocketAddress("localhost", 17001));
+                new InetSocketAddress("localhost", 17000));
         server.start();
     }
 

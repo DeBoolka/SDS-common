@@ -120,7 +120,7 @@ public class CellManagerHandler extends SimpleMessageHandler {
                 .ifPresent(c -> c.address = address);
     }
 
-    private CellInfo getCellInfo(double x, double y) {
+    public CellInfo getCellInfo(double x, double y) {
         return rectangles.stream().filter(r -> r.contains(x, y)).findFirst().map(r -> cells.get(r)).get();
     }
 
@@ -134,7 +134,7 @@ public class CellManagerHandler extends SimpleMessageHandler {
     }
 
     @AllArgsConstructor
-    private static class CellInfo {
+    public static class CellInfo {
 
         public ChannelConnector channelConnector;
         public InetSocketAddress address;
