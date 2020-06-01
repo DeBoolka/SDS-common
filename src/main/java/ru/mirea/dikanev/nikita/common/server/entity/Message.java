@@ -1,6 +1,7 @@
 package ru.mirea.dikanev.nikita.common.server.entity;
 
 import java.nio.ByteBuffer;
+import java.util.stream.StreamSupport;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,6 +39,25 @@ public class Message {
     public static Message create(ChannelConnector from, int action, byte[] data) {
         return new Message(from, action, data);
     }
+
+    public static Message create(ChannelConnector from, int action, byte[] data1, byte[]... dataArray) {
+        int lenDataArray = 0;
+        for (byte[] dataN : dataArray){
+            lenDataArray += dataN.length;
+        }
+
+        byte[] data = new byte[data1.length + lenDataArray];
+        System.arraycopy(data1, 0, data, 0, data1.length);
+
+        int index = data1.length;
+        for (byte[] dataN : dataArray) {
+            System.arraycopy(dataN, 0, data, index, dataN.length);
+            index += dataN.length;
+        }
+
+        return new Message(from, action, data);
+    }
+
 
     public static Message create(ChannelConnector from, int action, ByteBuffer data) {
         return new Message(from, action, data);

@@ -5,6 +5,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import lombok.extern.log4j.Log4j2;
+import ru.mirea.dikanev.nikita.common.math.Rectangle;
 import ru.mirea.dikanev.nikita.common.server.CellManagerServer;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
@@ -40,9 +41,11 @@ public class CellManagerMessageProcessor implements MessageProcessor {
             } else if (Codes.SET_ADDRESS_ACTION == message.getAction()) {
                 setAddress((CellManagerHandler) handler, message);
                 return;
+            } else if (Codes.GET_RECTANGLE_ACTION == message.getAction()) {
+                getRectangle((CellManagerHandler) handler, message);
+                return;
             }
             server.getMessageHandlers().forEach(h -> h.sendMessage(message));
-
         });
     }
 
@@ -70,6 +73,15 @@ public class CellManagerMessageProcessor implements MessageProcessor {
                                 posPack.y,
                                 addr.getHostName().getBytes(),
                                 addr.getPort())));
+    }
+
+    protected void getRectangle(CellManagerHandler handler, Message message) {
+        Rectangle rectangle = handler.getRectangle(message.getFrom());
+        handler.sendMessage(message.getFrom().getChannel(),
+                Message.create(null,
+                        Codes.SET_RECTANGLE_ACTION,
+                        PositionCodec.newPositionPack(-1, rectangle.upperLeftCorner.x, rectangle.upperLeftCorner.y),
+                        PositionCodec.newPositionPack(-1, rectangle.bottomRightCorner.x, rectangle.bottomRightCorner.y)));
     }
 
     @Override

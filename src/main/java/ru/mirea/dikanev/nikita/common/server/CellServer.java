@@ -25,10 +25,10 @@ public class CellServer extends SimpleMessageServer {
     }
 
     public static CellServer create(int nMessageProcessors, int nHandlers, InetSocketAddress cellManager,
-            InetSocketAddress localAddress, Rectangle rectangle) throws IOException, AuthenticationException {
+            InetSocketAddress localAddress) throws IOException, AuthenticationException {
 
         CellServer server = new CellServer();
-        CellMessageProcessor processor = new CellMessageProcessor(server, nMessageProcessors, rectangle);
+        CellMessageProcessor processor = new CellMessageProcessor(server, nMessageProcessors);
 
         server.processor(processor);
         server.handlers(IntStream.range(0, nHandlers).mapToObj(i -> {
@@ -69,8 +69,13 @@ public class CellServer extends SimpleMessageServer {
         }
 
 
+        log.info("Sending a local address to the Cell Manager");
         send(Message.create(null,
                 Codes.SET_ADDRESS_ACTION,
+                AddressCodec.newAddressPack(localServerAddr.getHostName(), localServerAddr.getPort())));
+        log.info("Getting a rectangle from the Cell Manager");
+        send(Message.create(null,
+                Codes.GET_RECTANGLE_ACTION,
                 AddressCodec.newAddressPack(localServerAddr.getHostName(), localServerAddr.getPort())));
 
     }

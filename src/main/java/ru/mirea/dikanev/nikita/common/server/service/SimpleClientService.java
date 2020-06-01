@@ -25,7 +25,7 @@ public class SimpleClientService implements ClientService {
     private Map<Integer, UserInfo> users = new ConcurrentHashMap<>();//TODO: replace with user storage
     private Map<Integer, SessionInfo> sessions = new ConcurrentHashMap<>();
 
-    private volatile AtomicInteger lastId = new AtomicInteger(0);
+    private volatile AtomicInteger lastId = new AtomicInteger(1);
 
     {
         users.put(ROOT_USER_ID, new UserInfo("root:root", true));
@@ -117,6 +117,7 @@ public class SimpleClientService implements ClientService {
         }
 
         Client client = new AuthenticationClient(id);
+        client.setCredentials(credentials);
         sessions.put(id, new SessionInfo(client, new Point(DEFAULT_POSITION)));
         return client;
     }

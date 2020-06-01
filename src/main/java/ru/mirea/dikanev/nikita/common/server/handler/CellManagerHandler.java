@@ -124,6 +124,15 @@ public class CellManagerHandler extends SimpleMessageHandler {
         return rectangles.stream().filter(r -> r.contains(x, y)).findFirst().map(r -> cells.get(r)).get();
     }
 
+    public Rectangle getRectangle(ChannelConnector connector) {
+        return  cells.entrySet()
+                .stream()
+                .filter(e -> e.getValue().channelConnector.equals(connector))
+                .findAny()
+                .map(Entry::getKey)
+                .orElse(null);
+    }
+
     @AllArgsConstructor
     private static class CellInfo {
 

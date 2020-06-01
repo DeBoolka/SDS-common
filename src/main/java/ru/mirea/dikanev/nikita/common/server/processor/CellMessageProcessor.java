@@ -1,6 +1,7 @@
 package ru.mirea.dikanev.nikita.common.server.processor;
 
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -49,13 +50,12 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
     protected MessageCodec messageCodec = new MessageCodec();
     protected LoginCodec loginCodec = new LoginCodec();
 
-    private Rectangle cellRectangle;
+    private Rectangle cellRectangle = new Rectangle(0, 0, 0, 0);
 
-    public CellMessageProcessor(CellServer server, int nThreads, Rectangle cellRectangle) {
+    public CellMessageProcessor(CellServer server, int nThreads) {
         this.server = server;
         this.messageTasks = Executors.newFixedThreadPool(nThreads);
         this.clientService = new SimpleClientService();
-        this.cellRectangle = cellRectangle;
     }
 
     @Override
@@ -92,8 +92,14 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
             case GET_ADDRESS_ACTION:
                 getSectorAddr(handler, message);
                 return;
-            default:
+            case SET_RECTANGLE_ACTION:
+                setRectangle(handler, message);
                 return;
+            case GET_RECTANGLE_ACTION:
+                getRectangle(handler, message);
+                return;
+            default:
+                log.warn("Unknown action code: {}", actionCode);
         }
     }
 
@@ -208,6 +214,29 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                                 posPack.y,
                                 addr.getHostName().getBytes(),
                                 addr.getPort())));
+    }
+
+    private void setRectangle(CellHandler handler, Message message) {
+        ByteBuffer payload = message.payload();
+        PositionPackage upperLeftCorner = positionCodec.decode(payload);
+        PositionPackage bottomRightCorner = positionCodec.decode(payload);
+
+        this.cellRectangle = new Rectangle(upperLeftCorner.x,
+                upperLeftCorner.y,
+                bottomRightCorner.x,
+                bottomRightCorner.y);
+        handler.setRectangle(this.cellRectangle);
+
+        handler.getSectors().forEach(sector -> handler.sendMessage(sector.getChannel(), message));
+    }
+
+    private void getRectangle(CellHandler handler, Message message) {
+        Rectangle rectangle = handler.getRectangle();
+        handler.sendMessage(message.getFrom().getChannel(),
+                Message.create(null,
+                        Codes.SET_RECTANGLE_ACTION,
+                        PositionCodec.newPositionPack(-1, rectangle.upperLeftCorner.x, rectangle.upperLeftCorner.y),
+                        PositionCodec.newPositionPack(-1, rectangle.bottomRightCorner.x, rectangle.bottomRightCorner.y)));
     }
 
     protected Predicate<SelectionKey> onlyParentServer() {

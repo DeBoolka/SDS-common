@@ -36,9 +36,15 @@ public class SimpleMessageSender implements MessageSender {
 
         while (!messages.isEmpty()) {
             Message message = messages.get(0);
-            ByteBuffer writeBuffer = ByteBuffer.wrap(message.getData().array());
+            byte[] payload = message.getData().array();
+
+            ByteBuffer writeBuffer = ByteBuffer.allocate(payload.length + Integer.BYTES);
+            writeBuffer.putInt(payload.length);
+            writeBuffer.put(payload);
+            writeBuffer.flip();
+
             int numBytesWritten = connector.onWrite(handler.selector(), handler, writeBuffer);
-            if (numBytesWritten == -1) {
+            if (numBytesWritten <= 0) {
                 //The channel is not yet ready for writing
                 return;
             } else if (writeBuffer.remaining() > 0) {

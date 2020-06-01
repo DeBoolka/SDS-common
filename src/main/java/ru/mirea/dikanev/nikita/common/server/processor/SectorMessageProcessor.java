@@ -14,7 +14,7 @@ import ru.mirea.dikanev.nikita.common.server.service.SimpleClientService;
 public class SectorMessageProcessor extends CellMessageProcessor {
 
     public SectorMessageProcessor(CellServer server, int nThreads) {
-        super(server, nThreads, null);
+        super(server, nThreads);
     }
 
     @Override

@@ -25,8 +25,7 @@ public class App {
         CellServer server = CellServer.create(1,
                 1,
                 new InetSocketAddress("localhost", 19000),
-                new InetSocketAddress("localhost", 12000),
-                new Rectangle(500, 500, 1000, 1000));
+                new InetSocketAddress("localhost", 12000));
         server.start();
 //        Thread.sleep(1000);
 //        server.send(Message.create(null, Codes.SET_ADDRESS_ACTION, AddressCodec.newAddressPack("localhost", 12000)));
@@ -44,7 +43,7 @@ public class App {
     private static void slaveDat() throws IOException, InterruptedException, AuthenticationException {
 //        MessageHandler msgHandler = new SimpleMessageHandler();
 //        MessageServer slave = new SimpleMessageServer(1, msgHandler);
-        CellServer slave = SectorServer.create(1, 1,null, null, new Rectangle(0, 100, 100, 0));
+        CellServer slave = SectorServer.create(1, 1,null, null);
         SocketChannelConnector channel = new SocketChannelConnector(new InetSocketAddress("127.0.0.1", 19000));
         slave.start();
         slave.bind(channel);
