@@ -54,7 +54,7 @@ public class Balancer {
         return this;
     }
 
-    public List<List<VoronoiPoint>> get() {
+    public List<List<VoronoiPoint>> clusters() {
         return clusters;
     }
 

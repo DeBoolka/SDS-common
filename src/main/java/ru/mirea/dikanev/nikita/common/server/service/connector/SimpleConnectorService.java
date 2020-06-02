@@ -99,7 +99,7 @@ public class SimpleConnectorService implements ConnectorService {
             }
 
             changeRequests.forEach(change -> {
-                if (change.type == ChangeOpsRequest.CHANGE_OPS) {
+                if (change.type == ChangeOpsRequest.CHANGE_OPS && change.channel.isOpen()) {
                     SelectionKey key = change.channel.keyFor(handler.selector());
                     key.interestOps(change.ops);
                 }

@@ -33,6 +33,7 @@ public class Client {
     public static final String GET_SECTOR_ADDR_ACTION = "as";
     public static final String SET_ADDR_ACTION = "sa";
     public static final String SET_STATE_ACTION = "ss";
+    public static final String BALANCE_ACTION = "b";
 
     public static final String DEFAULT_HOST = "127.0.0.1";
     public static final int PORT = 18000;
@@ -50,7 +51,6 @@ public class Client {
     // TODO: Нужно создать блокирующую очередь, в которую складывать данные для обмена между потоками
 
     public void init() throws Exception {
-
 
         scanner = new Scanner(System.in);
         System.out.println("host: ");
@@ -106,8 +106,11 @@ public class Client {
                         case SET_ADDR_ACTION:
                             queue.put(toSetAddr());
                             break;
-                            case SET_STATE_ACTION:
+                        case SET_STATE_ACTION:
                             queue.put(toSetState());
+                            break;
+                        case BALANCE_ACTION:
+                            queue.put(toBalance());
                             break;
                     }
                 } catch (InterruptedException e) {
@@ -236,7 +239,7 @@ public class Client {
         System.out.println("Reconnect to " + addr);
 
         System.out.println("Ping...");
-        queue.put(PositionCodec.newPositionPack(id, 0, 0));
+        queue.put(addAction(Codes.PING_ACTION, PositionCodec.newPositionPack(id, 0, 0)));
     }
 
     private byte[] toMessage() {
@@ -347,6 +350,10 @@ public class Client {
 
         return addAction(Codes.SET_STATE_ACTION,
                 PositionCodec.newPositionPack(id, Integer.parseInt(x), Integer.parseInt(y)));
+    }
+
+    private byte[] toBalance() {
+        return addAction(Codes.BALANCE_ACTION, PositionCodec.newPositionPack(id, 0, 0));
     }
 
     private byte[] addAction(int action, byte[] buffer) {

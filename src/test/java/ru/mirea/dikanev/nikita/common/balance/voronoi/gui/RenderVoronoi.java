@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 import javax.swing.JFrame;
 
 import ru.mirea.dikanev.nikita.common.balance.Balancer;
-import ru.mirea.dikanev.nikita.common.balance.voronoi.Voronoi;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.VoronoiPoint;
 
 public class RenderVoronoi extends JFrame {
@@ -24,14 +23,14 @@ public class RenderVoronoi extends JFrame {
     }
 
     public void paint(Graphics g) {
-        System.out.println("Numbers of clusters: " + balancer.get().size());
+        System.out.println("Numbers of clusters: " + balancer.clusters().size());
 
         Graphics2D g2 = (Graphics2D) g;
-        for (int i = 0; i < balancer.get().size(); i++) {
+        for (int i = 0; i < balancer.clusters().size(); i++) {
             Random r = new Random(i);
             g2.setColor(new Color(r.nextFloat(), r.nextFloat(), r.nextFloat()));
 
-            for (VoronoiPoint point : balancer.get().get(i)) {
+            for (VoronoiPoint point : balancer.clusters().get(i)) {
                 g2.fillOval((int) Math.round(point.x() - POINT_SIZE / 2),
                         size - (int) Math.round(point.y() + POINT_SIZE / 2),
                         (int) POINT_SIZE,
@@ -41,7 +40,7 @@ public class RenderVoronoi extends JFrame {
                         size - (int) Math.round(point.y() + POINT_SIZE / 2));
             }
 
-            System.out.println("Cluster " + i + " size: " + balancer.get().get(i).size());
+            System.out.println("Cluster " + i + " size: " + balancer.clusters().get(i).size());
         }
 
 //        for (VoronoiPoint site : diagram.getGraph().getSitePoints()) {
@@ -59,7 +58,7 @@ public class RenderVoronoi extends JFrame {
 
     public static void main(String[] args) {
         Random r = new Random(9235563856L);
-        Stream<VoronoiPoint> gen = Stream.generate(() -> new VoronoiPoint(r.nextDouble() * size, r.nextDouble() * size));
+        Stream<VoronoiPoint> gen = Stream.generate(() -> new VoronoiPoint(r.nextDouble() * size, r.nextDouble() * size, r.nextInt()));
         /*Voronoi diagram = new Voronoi(Arrays.asList(new Point(0, 0),
                 new Point(40, 0),
                 new Point(20, 20),

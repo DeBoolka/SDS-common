@@ -8,13 +8,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.math3.ml.clustering.Cluster;
-import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
-import org.apache.commons.math3.ml.clustering.DoublePoint;
-import ru.mirea.dikanev.nikita.common.balance.voronoi.Voronoi;
+import ru.mirea.dikanev.nikita.common.balance.Balancer;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.VoronoiPoint;
 import ru.mirea.dikanev.nikita.common.math.Point;
 import ru.mirea.dikanev.nikita.common.math.Rectangle;
@@ -196,7 +194,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
     protected void position(CellHandler handler, Message message) {
         PositionPackage posPackage = positionCodec.decode(message.payload());
         Client client = message.getFrom().getClient().orElse(null);
-        if (client == null) {
+        if (client == null || posPackage.userId == -1) {
             return;
         }
 
@@ -304,26 +302,41 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
             return;
         }
 
-        Client client = new AuthenticationClient(posPack.userId);
+        Client client = clientService.getClient(posPack.userId).orElse(new AuthenticationClient(posPack.userId));
         clientService.newSession(client, new Point(posPack.x, posPack.y));
     }
 
     protected void balanceAction(CellHandler handler, Message message) {
-        HashMap<Integer, SimpleClientService.SessionInfo> players = new HashMap<>(clientService.getClients());
-        List<VoronoiPoint> points = players.keySet()
+        List<VoronoiPoint> points = playerService.getMap()
+                .entrySet()
                 .stream()
-                .map(userId -> {
-                    PlayerState state = playerService.getState(userId);
-                    if (state == null) {
-                        return null;
-                    }
-                    return new VoronoiPoint(state.getPosition(), userId);
-                })
-                .filter(Objects::nonNull)
+                .map(entry -> new VoronoiPoint(entry.getValue().getPosition(), entry.getKey()))
                 .collect(Collectors.toList());
 
-        //todo: to cluster
+        List<InetSocketAddress> addresses = List.copyOf(handler.getSectorAddresses().values());
+        Balancer balancer = new Balancer(points).cluster(addresses.size());
+        IntStream.range(0, addresses.size())
+                .forEach(i -> balancer.clusters()
+                        .get(i)
+                        .forEach(point -> handler.getSectors()
+                                .forEach(connector -> {
+                                    handler.sendMessage(connector.getChannel(),
+                                            Message.create(null,
+                                                    Codes.SET_CLIENT,
+                                                    PositionCodec.newPositionPack(point.playerId,
+                                                            point.x(),
+                                                            point.y())));
+                                    handler.sendMessage(connector.getChannel(),
+                                            Message.create(null,
+                                                    Codes.RECONNECT_ACTION,
+                                                    ReconnectCodec.newReconnectPack(point.playerId,
+                                                            point.x(),
+                                                            point.y(),
+                                                            addresses.get(i).getHostName().getBytes(),
+                                                            addresses.get(i).getPort())));
+                                })));
 
+        //TODO: The Sectors don't know about other players. After reconnecting, players will log out
     }
 
     protected Predicate<SelectionKey> onlyParentServer() {

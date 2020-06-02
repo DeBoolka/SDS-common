@@ -2,6 +2,7 @@ package ru.mirea.dikanev.nikita.common.server.handler;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,6 +80,10 @@ public class CellHandler extends SimpleMessageHandler {
     public void setRectangle(Rectangle rectangle) {
         log.info("Set rectangle: {}", rectangle);
         this.rectangle = rectangle;
+    }
+
+    public Map<ChannelConnector, InetSocketAddress> getSectorAddresses() {
+        return new HashMap<>(sectors);
     }
 
     public Set<ChannelConnector> getSectors() {

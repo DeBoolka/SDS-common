@@ -50,7 +50,11 @@ public class SectorMessageProcessor extends CellMessageProcessor {
     protected void reconnect(CellHandler handler, Message message) {
         ReconnectPackage rcPack = reconnectCodec.decode(message.payload());
         clientService.getClient(rcPack.userId)
-                .ifPresent(client -> handler.sendMessage(client.getChannel().getChannel(), message));
+                .ifPresent(client -> {
+                    if (client.getChannel() != null) {
+                        handler.sendMessage(client.getChannel().getChannel(), message);
+                    }
+                });
     }
 
     @Override
