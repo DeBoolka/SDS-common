@@ -1,6 +1,6 @@
 package ru.mirea.dikanev.nikita.common.balance.voronoi.beachline;
 
-import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Point;
+import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.VoronoiPoint;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -26,31 +26,31 @@ public class InnerBeachNode extends BeachNode {
     }
 
     @Override
-    public InsertionResult insertArc(Point newSite) {
+    public InsertionResult insertArc(VoronoiPoint newSite) {
         // Find leafs represented by this inner node
-        Point l = leftChild.getRightmostLeaf().getSite();
-        Point r = rightChild.getLeftmostLeaf().getSite();
+        VoronoiPoint l = leftChild.getRightmostLeaf().getSite();
+        VoronoiPoint r = rightChild.getLeftmostLeaf().getSite();
 
         // Transform coordinate to local coords
-        double lxOld = l.x;
-        r = new Point(r.x - l.x, r.y - newSite.y);
-        l = new Point(0, l.y - newSite.y);
+        double lxOld = l.x();
+        r = new VoronoiPoint(r.x() - l.x(), r.y() - newSite.y());
+        l = new VoronoiPoint(0, l.y() - newSite.y());
 
         // Compute intersection of parabolas
         double x;
-        if (Double.compare(l.y, r.y) == 0) {
-            x = r.x / 2.0;
-        } else if (l.y == 0.0) {
-            x = l.x;
-        } else if (r.y == 0.0) {
-            x = r.x;
+        if (Double.compare(l.y(), r.y()) == 0) {
+            x = r.x() / 2.0;
+        } else if (l.y() == 0.0) {
+            x = l.x();
+        } else if (r.y() == 0.0) {
+            x = r.x();
         } else {
-            x = (l.y * r.x - sqrt(l.y * r.y * (sq(l.y - r.y) + sq(r.x)))) / (l.y - r.y);
+            x = (l.y() * r.x() - sqrt(l.y() * r.y() * (sq(l.y() - r.y()) + sq(r.x())))) / (l.y() - r.y());
         }
 
         x += lxOld;
 
-        return newSite.x < x ? leftChild.insertArc(newSite) : rightChild.insertArc(newSite);
+        return newSite.x() < x ? leftChild.insertArc(newSite) : rightChild.insertArc(newSite);
     }
 
     @Override

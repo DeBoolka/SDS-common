@@ -7,7 +7,7 @@ import ru.mirea.dikanev.nikita.common.balance.voronoi.beachline.Beachline;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.beachline.LeafBeachNode;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Edge;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Graph;
-import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Point;
+import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.VoronoiPoint;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Vertex;
 import lombok.ToString;
 
@@ -23,7 +23,7 @@ public class VertexEvent extends Event {
     private final Circle circle;
 
     private VertexEvent(LeafBeachNode l, LeafBeachNode c, LeafBeachNode r, Circle circle) {
-        super(new Point(circle.center.x, circle.center.y - circle.radius));
+        super(new VoronoiPoint(circle.center.x(), circle.center.y() - circle.radius));
         this.l = l;
         this.c = c;
         this.r = r;
@@ -34,8 +34,8 @@ public class VertexEvent extends Event {
     }
 
     public static Optional<VertexEvent> build(LeafBeachNode l, LeafBeachNode c, LeafBeachNode r) {
-        Point ap = l.getSite(), bp = c.getSite(), cp = r.getSite();
-        double convergence = (ap.y - bp.y) * (bp.x - cp.x) - (bp.y - cp.y) * (ap.x - bp.x);
+        VoronoiPoint ap = l.getSite(), bp = c.getSite(), cp = r.getSite();
+        double convergence = (ap.y() - bp.y()) * (bp.x() - cp.x()) - (bp.y() - cp.y()) * (ap.x() - bp.x());
         if (convergence > 0) {
             Circle circle = new Circle(ap, bp, cp);
             if (circle.isValid()) {
@@ -67,46 +67,45 @@ public class VertexEvent extends Event {
             graph.addEdge(e);
             e.addVertex(v);
 
-            l.addCircleEvents(eventQueue::add, getPoint().y);
-            r.addCircleEvents(eventQueue::add, getPoint().y);
+            l.addCircleEvents(eventQueue::add, getPoint().y());
+            r.addCircleEvents(eventQueue::add, getPoint().y());
         }
     }
 
     @ToString
     public static class Circle {
-        public final Point center;
+        public final VoronoiPoint center;
         public final double radius;
 
-        public Circle(Point center, double radius) {
+        public Circle(VoronoiPoint center, double radius) {
             this.center = center;
             this.radius = radius;
         }
 
-        private Circle(Point l, Point c, Point r) {
-            if (l.x != c.x && c.x != r.x) {
+        private Circle(VoronoiPoint l, VoronoiPoint c, VoronoiPoint r) {
+            if (l.x() != c.x() && c.x() != r.x()) {
                 center = computeCenter(l, c, r);
-            } else if (c.x != l.x && r.x != l.x) {
+            } else if (c.x() != l.x() && r.x() != l.x()) {
                 center = computeCenter(c, l, r);
-            } else if (c.x != r.x && l.x != r.x) {
+            } else if (c.x() != r.x() && l.x() != r.x()) {
                 center = computeCenter(c, r, l);
             } else {
-                center = new Point(Double.NaN, Double.NaN);
+                center = new VoronoiPoint(Double.NaN, Double.NaN);
             }
-            radius = sqrt(sq(c.x - center.x) + sq(c.y - center.y));
-            System.out.println(center + " -> " + radius);
+            radius = sqrt(sq(c.x() - center.x()) + sq(c.y() - center.y()));
         }
 
-        private static Point computeCenter(Point l, Point c, Point r) {
-            double ma = (c.y - l.y) / (c.x - l.x);
-            double mb = (r.y - c.y) / (r.x - c.x);
+        private static VoronoiPoint computeCenter(VoronoiPoint l, VoronoiPoint c, VoronoiPoint r) {
+            double ma = (c.y() - l.y()) / (c.x() - l.x());
+            double mb = (r.y() - c.y()) / (r.x() - c.x());
 
-            double x = (ma * mb * (l.y - r.y) + mb * (l.x + c.x) - ma * (c.x + r.x)) / (2.0 * (mb - ma));
+            double x = (ma * mb * (l.y() - r.y()) + mb * (l.x() + c.x()) - ma * (c.x() + r.x())) / (2.0 * (mb - ma));
             if (ma != 0.0) {
-                double y = -(x - (l.x + c.x) / 2.0) / ma + (l.y + c.y) / 2.0;
-                return new Point(x, y);
+                double y = -(x - (l.x() + c.x()) / 2.0) / ma + (l.y() + c.y()) / 2.0;
+                return new VoronoiPoint(x, y);
             } else {
-                double y = -(x - (c.x + r.x) / 2.0) / mb + (c.y + r.y) / 2.0;
-                return new Point(x, y);
+                double y = -(x - (c.x() + r.x()) / 2.0) / mb + (c.y() + r.y()) / 2.0;
+                return new VoronoiPoint(x, y);
             }
         }
 
@@ -114,8 +113,8 @@ public class VertexEvent extends Event {
             return Double.isFinite(radius);
         }
 
-        public boolean contains(Point p) {
-            return sqrt(sq(p.x - center.x) + sq(p.y - center.y)) < (radius - EPSILON);
+        public boolean contains(VoronoiPoint p) {
+            return sqrt(sq(p.x() - center.x()) + sq(p.y() - center.y())) < (radius - EPSILON);
         }
 
         @Override

@@ -1,12 +1,12 @@
 package ru.mirea.dikanev.nikita.common.balance.voronoi.beachline;
 
-import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Point;
+import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.VoronoiPoint;
 
 public abstract class BeachNode {
 
     private InnerBeachNode parent;
 
-    public abstract InsertionResult insertArc(Point newSite);
+    public abstract InsertionResult insertArc(VoronoiPoint newSite);
 
     public abstract LeafBeachNode getLeftmostLeaf();
 

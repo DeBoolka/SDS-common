@@ -30,11 +30,11 @@ public class Vertex {
         return location().hashCode();
     }
 
-    public Point location() {
+    public VoronoiPoint location() {
         return circle.center;
     }
 
-    public Point getLocation() {
+    public VoronoiPoint getLocation() {
         return location();
     }
 }

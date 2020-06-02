@@ -15,5 +15,6 @@ public interface Codes {
     int SET_RECTANGLE_ACTION = 0x91;
     int GET_RECTANGLE_ACTION = 0x92;
     int SET_STATE_ACTION = 0x93;
+    int BALANCE_ACTION = 0x94;
 
 }

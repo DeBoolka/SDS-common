@@ -1,7 +1,7 @@
 package ru.mirea.dikanev.nikita.common.balance.voronoi.beachline;
 
 import org.junit.jupiter.api.Test;
-import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Point;
+import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.VoronoiPoint;
 import lombok.val;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,9 +16,9 @@ public class BeachlineTests {
     public void testInsert() {
         Beachline bl = new Beachline();
         assertNull(bl.getRoot());
-        LeafBeachNode root = bl.insertArc(new Point(0,0)).newLeaf;
+        LeafBeachNode root = bl.insertArc(new VoronoiPoint(0,0)).newLeaf;
         assertEquals(root, bl.getRoot());
-        LeafBeachNode first = bl.insertArc(new Point(0.5, 4)).newLeaf;
+        LeafBeachNode first = bl.insertArc(new VoronoiPoint(0.5, 4)).newLeaf;
         assertNotEquals(root, bl.getRoot());
         assertTrue(bl.getRoot() instanceof InnerBeachNode);
         InnerBeachNode newRoot = (InnerBeachNode) bl.getRoot();
@@ -38,10 +38,10 @@ public class BeachlineTests {
         //    O   O
         //   /|   |\
         //  1 2   3 4
-        val l1 = new LeafBeachNode(new Point(1, 0));
-        val l2 = new LeafBeachNode(new Point(2, 0));
-        val l3 = new LeafBeachNode(new Point(3, 0));
-        val l4 = new LeafBeachNode(new Point(4, 0));
+        val l1 = new LeafBeachNode(new VoronoiPoint(1, 0));
+        val l2 = new LeafBeachNode(new VoronoiPoint(2, 0));
+        val l3 = new LeafBeachNode(new VoronoiPoint(3, 0));
+        val l4 = new LeafBeachNode(new VoronoiPoint(4, 0));
         bl.setRoot(new InnerBeachNode(new InnerBeachNode(l1, l2), new InnerBeachNode(l3, l4)));
 
         assertFalse(l1.getLeftNeighbor().isPresent());

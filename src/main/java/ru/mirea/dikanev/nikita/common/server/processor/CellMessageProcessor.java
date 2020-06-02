@@ -3,13 +3,19 @@ package ru.mirea.dikanev.nikita.common.server.processor;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.math3.ml.clustering.Cluster;
+import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
+import org.apache.commons.math3.ml.clustering.DoublePoint;
+import ru.mirea.dikanev.nikita.common.balance.voronoi.Voronoi;
+import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.VoronoiPoint;
 import ru.mirea.dikanev.nikita.common.math.Point;
 import ru.mirea.dikanev.nikita.common.math.Rectangle;
 import ru.mirea.dikanev.nikita.common.server.CellServer;
@@ -114,8 +120,11 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
             case SET_STATE_ACTION:
                 setState(handler, message);
                 return;
-                case SET_CLIENT:
+            case SET_CLIENT:
                 setClient(handler, message);
+                return;
+            case BALANCE_ACTION:
+                balanceAction(handler, message);
                 return;
             default:
                 log.warn("Unknown action code: {}", actionCode);
@@ -297,6 +306,24 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
 
         Client client = new AuthenticationClient(posPack.userId);
         clientService.newSession(client, new Point(posPack.x, posPack.y));
+    }
+
+    protected void balanceAction(CellHandler handler, Message message) {
+        HashMap<Integer, SimpleClientService.SessionInfo> players = new HashMap<>(clientService.getClients());
+        List<VoronoiPoint> points = players.keySet()
+                .stream()
+                .map(userId -> {
+                    PlayerState state = playerService.getState(userId);
+                    if (state == null) {
+                        return null;
+                    }
+                    return new VoronoiPoint(state.getPosition(), userId);
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        //todo: to cluster
+
     }
 
     protected Predicate<SelectionKey> onlyParentServer() {

@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class Edge {
     @Getter
-    private final Point site1, site2;
+    private final VoronoiPoint site1, site2;
     @Getter
     private Vertex a, b;
 

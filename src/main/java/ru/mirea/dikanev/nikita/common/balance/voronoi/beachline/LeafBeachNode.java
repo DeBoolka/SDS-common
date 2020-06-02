@@ -8,17 +8,17 @@ import java.util.function.Consumer;
 
 import ru.mirea.dikanev.nikita.common.balance.voronoi.event.Event;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.event.VertexEvent;
-import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Point;
+import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.VoronoiPoint;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = false)
 public class LeafBeachNode extends BeachNode {
 
-    private final Point site;
+    private final VoronoiPoint site;
 
     private final List<VertexEvent> subscribedEvents = new LinkedList<>();
 
-    LeafBeachNode(Point site) {
+    LeafBeachNode(VoronoiPoint site) {
         this.site = site;
     }
 
@@ -26,21 +26,21 @@ public class LeafBeachNode extends BeachNode {
         return new LeafBeachNode(site);
     }
 
-    public Point getSite() {
+    public VoronoiPoint getSite() {
         return site;
     }
 
     @Override
-    public InsertionResult insertArc(Point newSite) {
+    public InsertionResult insertArc(VoronoiPoint newSite) {
         LeafBeachNode newLeaf = new LeafBeachNode(newSite);
-        if (newSite.y == site.y) {
-            if (newSite.x < site.x) {
+        if (newSite.y() == site.y()) {
+            if (newSite.x() < site.x()) {
                 replaceBy(new InnerBeachNode(newLeaf, copy()));
             } else {
                 replaceBy(new InnerBeachNode(copy(), newLeaf));
             }
         } else {
-            if (newSite.x < site.x) {
+            if (newSite.x() < site.x()) {
                 replaceBy(new InnerBeachNode(new InnerBeachNode(copy(), newLeaf), copy()));
             } else {
                 replaceBy(new InnerBeachNode(copy(), new InnerBeachNode(newLeaf, copy())));

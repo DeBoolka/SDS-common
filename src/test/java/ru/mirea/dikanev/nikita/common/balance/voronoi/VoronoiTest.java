@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.event.VertexEvent.Circle;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Edge;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Graph;
-import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Point;
+import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.VoronoiPoint;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Vertex;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,12 +19,12 @@ public class VoronoiTest {
 
     @Test
     public void test() {
-        val p1 = new Point(0.5, 1.5);
-        val p2 = new Point(1.5, 1.5);
-        val p3 = new Point(1.5, 0.5);
-        val p4 = new Point(0.5, 0.5);
+        val p1 = new VoronoiPoint(0.5, 1.5);
+        val p2 = new VoronoiPoint(1.5, 1.5);
+        val p3 = new VoronoiPoint(1.5, 0.5);
+        val p4 = new VoronoiPoint(0.5, 0.5);
 
-        val c = (new Point(1, 1));
+        val c = (new VoronoiPoint(1, 1));
 
         val points = Arrays.asList(c, p1, p2, p3, p4);
 
@@ -40,19 +40,19 @@ public class VoronoiTest {
         referenceGraph.addEdge(new Edge(p2, c));
         referenceGraph.addEdge(new Edge(p3, c));
         referenceGraph.addEdge(new Edge(p4, c));
-        Vertex v1 = new Vertex(new Circle(new Point(1.0, 1.5), 1));
+        Vertex v1 = new Vertex(new Circle(new VoronoiPoint(1.0, 1.5), 1));
         referenceGraph.getEdgeBetweenSites(p1, p2).get().addVertex(v1);
         referenceGraph.getEdgeBetweenSites(p1, c).get().addVertex(v1);
         referenceGraph.getEdgeBetweenSites(p2, c).get().addVertex(v1);
-        Vertex v2 = new Vertex(new Circle(new Point(1.5, 1.0), 1));
+        Vertex v2 = new Vertex(new Circle(new VoronoiPoint(1.5, 1.0), 1));
         referenceGraph.getEdgeBetweenSites(p2, p3).get().addVertex(v2);
         referenceGraph.getEdgeBetweenSites(p2, c).get().addVertex(v2);
         referenceGraph.getEdgeBetweenSites(p3, c).get().addVertex(v2);
-        Vertex v3 = new Vertex(new Circle(new Point(1.0, 0.5), 1));
+        Vertex v3 = new Vertex(new Circle(new VoronoiPoint(1.0, 0.5), 1));
         referenceGraph.getEdgeBetweenSites(p3, p4).get().addVertex(v3);
         referenceGraph.getEdgeBetweenSites(p3, c).get().addVertex(v3);
         referenceGraph.getEdgeBetweenSites(p4, c).get().addVertex(v3);
-        Vertex v4 = new Vertex(new Circle(new Point(0.5, 1.0), 1));
+        Vertex v4 = new Vertex(new Circle(new VoronoiPoint(0.5, 1.0), 1));
         referenceGraph.getEdgeBetweenSites(p4, p1).get().addVertex(v4);
         referenceGraph.getEdgeBetweenSites(p4, c).get().addVertex(v4);
         referenceGraph.getEdgeBetweenSites(p1, c).get().addVertex(v4);
@@ -63,7 +63,7 @@ public class VoronoiTest {
     @Test
     public void testBoundingBox1() {
         try {
-            new Voronoi(Arrays.asList(new Point(10, 0), new Point(0, 10)))
+            new Voronoi(Arrays.asList(new VoronoiPoint(10, 0), new VoronoiPoint(0, 10)))
                     .applyBoundingBox(0, 0, 5, 5);
             fail();
         } catch (IllegalArgumentException ignored) {}
@@ -76,10 +76,10 @@ public class VoronoiTest {
 
     @Test
     public void testColinear() {
-    	List<Point> points = new ArrayList<Point>();
+    	List<VoronoiPoint> points = new ArrayList<VoronoiPoint>();
     	for (int x = 0; x <= 4; x +=2) {
     		for (int y = 0; y <= 4; y+= 2) {
-    			points.add(new Point(x, y));
+    			points.add(new VoronoiPoint(x, y));
     		}
     	}
 

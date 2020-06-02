@@ -2,13 +2,13 @@ package ru.mirea.dikanev.nikita.common.balance.voronoi.beachline;
 
 import java.util.Optional;
 
-import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Point;
+import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.VoronoiPoint;
 
 public class Beachline {
 
     private final InnerBeachNode rootContainer = new InnerBeachNode();
 
-    public InsertionResult insertArc(Point newSite) {
+    public InsertionResult insertArc(VoronoiPoint newSite) {
         BeachNode root = getRoot();
         if (root != null) {
             return root.insertArc(newSite);

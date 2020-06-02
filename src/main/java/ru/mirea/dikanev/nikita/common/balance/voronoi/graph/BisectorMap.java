@@ -13,12 +13,12 @@ class BisectorMap {
 
     private final Map<Bisector, Edge> data = new LinkedHashMap<>();
 
-    void put(Point a, Point b, Edge e) {
+    void put(VoronoiPoint a, VoronoiPoint b, Edge e) {
         assert !data.containsKey(new Bisector(a, b));
         data.put(new Bisector(a, b), e);
     }
 
-    Edge get(Point a, Point b) {
+    Edge get(VoronoiPoint a, VoronoiPoint b) {
         return data.get(new Bisector(a, b));
     }
 
@@ -49,7 +49,7 @@ class BisectorMap {
     @ToString
     private static class Bisector {
         @NonNull
-        private final Point a, b;
+        private final VoronoiPoint a, b;
 
         @Override
         public boolean equals(Object o) {

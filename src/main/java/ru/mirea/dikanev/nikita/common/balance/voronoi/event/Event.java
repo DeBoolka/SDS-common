@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import ru.mirea.dikanev.nikita.common.balance.voronoi.beachline.Beachline;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Graph;
-import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Point;
+import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.VoronoiPoint;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -12,11 +12,11 @@ import lombok.RequiredArgsConstructor;
 public abstract class Event implements Comparable<Event> {
 
     @Getter
-    private final Point point;
+    private final VoronoiPoint point;
 
     @Override
     public int compareTo(Event o) {
-        return Double.compare(o.point.y, point.y);
+        return Double.compare(o.point.y(), point.y());
     }
 
     @Override

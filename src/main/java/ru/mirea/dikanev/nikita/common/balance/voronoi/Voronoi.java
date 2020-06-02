@@ -15,7 +15,7 @@ import ru.mirea.dikanev.nikita.common.balance.voronoi.event.Event;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.event.SiteEvent;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Edge;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Graph;
-import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Point;
+import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.VoronoiPoint;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Vertex;
 import lombok.Getter;
 import lombok.val;
@@ -35,7 +35,7 @@ public class Voronoi {
      *
      * @param points the site points
      */
-    public Voronoi(Collection<Point> points) {
+    public Voronoi(Collection<VoronoiPoint> points) {
         val queue = new PriorityQueue<Event>();
         points.stream().map(SiteEvent::new).forEach(queue::offer);
         points.forEach(graph::addSite);
@@ -44,10 +44,10 @@ public class Voronoi {
         double sweep = Double.MAX_VALUE;
         while (!queue.isEmpty()) {
             val e = queue.peek();
-            assert e.getPoint().y <= sweep;
+            assert e.getPoint().y() <= sweep;
             e.handle(queue, beachline, graph);
             queue.remove(e);
-            sweep = e.getPoint().y;
+            sweep = e.getPoint().y();
         }
     }
 
@@ -65,7 +65,7 @@ public class Voronoi {
      */
     public Voronoi applyBoundingBox(double x, double y, double width, double height) {
         getGraph().getSitePoints().stream()
-                .filter(p -> p.x < x || p.x > x + width || p.y < y || p.y > y + height).findAny().ifPresent(p -> {
+                .filter(p -> p.x() < x || p.x() > x + width || p.y() < y || p.y() > y + height).findAny().ifPresent(p -> {
             throw new IllegalArgumentException("Site " + p + " lies outside the bounding box.");
         });
         throw new UnsupportedOperationException("Not implemented.");//TODO
@@ -78,21 +78,21 @@ public class Voronoi {
      * @return a new voronoi diagram representing the lloyd relaxation of this one
      */
     public Voronoi relax() {
-        Map<Point, Set<Edge>> edges = new HashMap<>();
+        Map<VoronoiPoint, Set<Edge>> edges = new HashMap<>();
         graph.getSitePoints().forEach(p -> edges.put(p, new HashSet<>()));
         graph.edgeStream().forEach(e -> {
             edges.get(e.getSite1()).add(e);
             edges.get(e.getSite2()).add(e);
         });
-        List<Point> newPoints = graph.getSitePoints().stream().map(site -> {
+        List<VoronoiPoint> newPoints = graph.getSitePoints().stream().map(site -> {
             Set<Vertex> vertices = Stream.concat(edges.get(site).stream().map(Edge::getA), edges.get(site).stream().map(Edge::getB)).collect(
                     Collectors.toSet());
             if (vertices.isEmpty() || vertices.contains(null)) {
                 return site;
             } else {
-                double avgX = vertices.stream().mapToDouble(v -> v.getLocation().x).average().getAsDouble();
-                double avgY = vertices.stream().mapToDouble(v -> v.getLocation().y).average().getAsDouble();
-                return new Point(avgX, avgY);
+                double avgX = vertices.stream().mapToDouble(v -> v.getLocation().x()).average().getAsDouble();
+                double avgY = vertices.stream().mapToDouble(v -> v.getLocation().y()).average().getAsDouble();
+                return new VoronoiPoint(avgX, avgY);
             }
         }).collect(Collectors.toList());
         return new Voronoi(newPoints);
