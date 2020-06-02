@@ -2,13 +2,13 @@ package ru.mirea.dikanev.nikita.common.balance.voronoi.gui;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.JFrame;
 
 import ru.mirea.dikanev.nikita.common.balance.voronoi.Voronoi;
+import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Point;
 
 public class RenderVoronoi extends JFrame {
 

@@ -29,6 +29,7 @@ public class SimpleClientService implements ClientService {
 
     {
         users.put(ROOT_USER_ID, new UserInfo("root:root", true));
+        users.put(1, new UserInfo("admin:admin", true));
     }
 
     public static Client getRootClient() {
@@ -59,9 +60,9 @@ public class SimpleClientService implements ClientService {
     @Override
     public void exitClient(Client client) {
         sessions.remove(client.getId());
-        if (!ROOT_USER_ID.equals(client.getId())) {
+        /*if (!ROOT_USER_ID.equals(client.getId())) {
             users.remove(client.getId());
-        }
+        }*/
     }
 
     @Override
@@ -102,6 +103,12 @@ public class SimpleClientService implements ClientService {
         return sessions;
     }
 
+    @Override
+    public void newSession(Client client, Point point) {
+        users.putIfAbsent(client.getId(), new UserInfo("admin:admin", false));
+        sessions.put(client.getId(), new SessionInfo(client, point));
+    }
+
     private Client createSession(Client client) throws AuthenticationException {
         if (client == null || client.getCredentials() == null) {
             return new UnauthenticatedClient();
@@ -137,7 +144,7 @@ public class SimpleClientService implements ClientService {
     }
 
     private boolean authentication(int clientId, Credentials credentials) {
-        UserInfo info = users.computeIfAbsent(clientId, k -> new UserInfo("admin:admin", false));
+        UserInfo info = users.computeIfAbsent(clientId, k -> new UserInfo(credentials.getLogin() + ":" + credentials.getPassword(), false));
         if (info.isServer) {
             return true;
         }

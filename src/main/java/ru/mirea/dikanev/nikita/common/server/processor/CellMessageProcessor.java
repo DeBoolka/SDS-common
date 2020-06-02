@@ -30,6 +30,7 @@ import ru.mirea.dikanev.nikita.common.server.protocol.pack.LoginPackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.MessagePackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.PositionPackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.ReconnectPackage;
+import ru.mirea.dikanev.nikita.common.server.secure.AuthenticationClient;
 import ru.mirea.dikanev.nikita.common.server.service.PlayerService;
 import ru.mirea.dikanev.nikita.common.server.service.SimplePlayerService;
 import ru.mirea.dikanev.nikita.common.server.service.client.ClientService;
@@ -109,8 +110,12 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                 return;
             case GET_RECTANGLE_ACTION:
                 getRectangle(handler, message);
+                return;
             case SET_STATE_ACTION:
                 setState(handler, message);
+                return;
+                case SET_CLIENT:
+                setClient(handler, message);
                 return;
             default:
                 log.warn("Unknown action code: {}", actionCode);
@@ -159,7 +164,15 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
     }
 
     protected void ping(Message message) {
-        //TODO: make
+        PositionPackage posPack = positionCodec.decode(message.payload());
+        clientService.getClient(posPack.userId).ifPresent(clientFromService -> {
+            message.getFrom().getClient().ifPresent(clientFromChannel -> {
+                if (clientFromChannel.getId() != clientFromService.getId()) {
+                    message.getFrom().setClient(clientFromService);
+                    clientFromService.setChannel(message.getFrom());
+                }
+            });
+        });
     }
 
     protected void reconnect(CellHandler handler, Message message) {
@@ -223,6 +236,18 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                                 posPack.y,
                                 addr.getHostName().getBytes(),
                                 addr.getPort())));
+
+        if (posPack.userId <= 0) {
+            return;
+        }
+
+        //This is turd. When a user is moving to this cell, it should call this method. At this moment, its id > 0
+        playerService.getMap().put(posPack.userId, new PlayerState(new Point(posPack.x, posPack.y)));
+        ChannelConnector sectorConnector = handler.getSector(posPack.x, posPack.y).getKey();
+        handler.sendMessage(sectorConnector.getChannel(),
+                Message.create(null,
+                        Codes.SET_CLIENT,
+                        PositionCodec.newPositionPack(posPack.userId, posPack.x, posPack.y)));
     }
 
     protected void setRectangle(CellHandler handler, Message message) {
@@ -262,6 +287,16 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
 
         oldPosition.x = position.x;
         oldPosition.y = position.y;
+    }
+
+    private void setClient(CellHandler handler, Message message) {
+        PositionPackage posPack = positionCodec.decode(message.payload());
+        if (posPack.userId < 0) {
+            return;
+        }
+
+        Client client = new AuthenticationClient(posPack.userId);
+        clientService.newSession(client, new Point(posPack.x, posPack.y));
     }
 
     protected Predicate<SelectionKey> onlyParentServer() {

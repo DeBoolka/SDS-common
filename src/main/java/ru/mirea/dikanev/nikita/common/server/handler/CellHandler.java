@@ -16,7 +16,6 @@ import ru.mirea.dikanev.nikita.common.server.receiver.MessageReceiver;
 import ru.mirea.dikanev.nikita.common.server.receiver.SimpleMessageReceiver;
 import ru.mirea.dikanev.nikita.common.server.sender.MessageSender;
 import ru.mirea.dikanev.nikita.common.server.sender.SimpleMessageSender;
-import ru.mirea.dikanev.nikita.common.server.service.client.SimpleClientService;
 import ru.mirea.dikanev.nikita.common.server.service.connector.ConnectorService;
 import ru.mirea.dikanev.nikita.common.server.service.connector.SimpleConnectorService;
 
@@ -38,7 +37,7 @@ public class CellHandler extends SimpleMessageHandler {
 
     private static CellHandler buildHandler(CellMessageProcessor processor) {
         CellHandler handler = new CellHandler();
-        ConnectorService service = new SimpleConnectorService(handler);
+        ConnectorService service = new SimpleConnectorService(handler, processor.getClientService());
         MessageSender sender = new SimpleMessageSender(handler, service);
         MessageReceiver receiver = new SimpleMessageReceiver(handler, service, processor);
 
@@ -68,21 +67,13 @@ public class CellHandler extends SimpleMessageHandler {
         super.bind(ChannelConnectorProvider.openClientConnector(address));
     }
 
-    public ChannelConnector getSector(double x, double y) {
+    public Map.Entry<ChannelConnector, InetSocketAddress> getSector(double x, double y) {
         //get accepting sockets and return any address
-        return ((CellMessageProcessor) processor).getClientService()
-                .getClients()
-                .values()
-                .stream()
-                .filter(si -> !SimpleClientService.ROOT_USER_ID.equals(si.getClient().getId()) &&
-                        si.getClient().getChannel().isAccepting())
-                .findAny()
-                .map(si -> si.getClient().getChannel())
-                .orElse(null);
+        return sectors.entrySet().stream().sorted().skip((int)((x + 2*y) % sectors.size())).findFirst().orElseThrow();
     }
 
     public InetSocketAddress getAddrSector(double x, double y) {
-        return sectors.values().stream().findAny().orElse(null);
+        return getSector(x, y).getValue();
     }
 
     public void setRectangle(Rectangle rectangle) {
@@ -97,4 +88,12 @@ public class CellHandler extends SimpleMessageHandler {
     public Rectangle getRectangle() {
         return rectangle;
     }
+
+    public static class SectorInfo {
+
+        public ChannelConnector connector;
+        public InetSocketAddress address;
+
+    }
+
 }

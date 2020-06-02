@@ -26,4 +26,6 @@ public interface ClientService {
     boolean isAuth(Client client);
 
     Map<Integer, SessionInfo> getClients();
+
+    void newSession(Client c, Point point);
 }

@@ -15,7 +15,7 @@ public class CellManagerApp {
         CellManagerServer master = CellManagerServer.create(1, 1);
         master.start();
         master.bind(new ServerSocketChannelConnector(new InetSocketAddress("127.0.0.1", 18000)));
-        master.bindCellAccepter(new ServerSocketChannelConnector(new InetSocketAddress("127.0.0.1", 19000)));
+        master.bindCellAccepter(new ServerSocketChannelConnector(new InetSocketAddress("127.0.0.1", 11000)));
     }
 
 }

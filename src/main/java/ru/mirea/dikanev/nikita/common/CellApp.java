@@ -13,8 +13,8 @@ public class CellApp {
 
         CellServer server = CellServer.create(1,
                 1,
-                new InetSocketAddress("localhost", 19000),
-                new InetSocketAddress("localhost", 14000));
+                new InetSocketAddress("localhost", 11000),
+                new InetSocketAddress("localhost", 12000));
         server.start();
     }
 

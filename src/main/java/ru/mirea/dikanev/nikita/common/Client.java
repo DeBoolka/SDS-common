@@ -197,7 +197,7 @@ public class Client {
         }
     }
 
-    private void parseMessage(byte[] copyOf) throws IOException {
+    private void parseMessage(byte[] copyOf) throws IOException, InterruptedException {
         ByteBuffer buffer = ByteBuffer.wrap(copyOf);
         int action = buffer.getInt();
         switch (action) {
@@ -222,7 +222,7 @@ public class Client {
         System.out.println("Action code is unknown: " + action);
     }
 
-    private void reconnect(ReconnectPackage rp) throws IOException {
+    private void reconnect(ReconnectPackage rp) throws IOException, InterruptedException {
         channel.keyFor(selector).cancel();
         channel.close();
 
@@ -234,6 +234,9 @@ public class Client {
 
         selector.wakeup();
         System.out.println("Reconnect to " + addr);
+
+        System.out.println("Ping...");
+        queue.put(PositionCodec.newPositionPack(id, 0, 0));
     }
 
     private byte[] toMessage() {

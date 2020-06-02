@@ -56,6 +56,7 @@ public class SectorMessageProcessor extends CellMessageProcessor {
     @Override
     protected void position(CellHandler handler, Message message) {
         //send to the cell
+        ping(message);
         handler.sendMessage(message,
                 key -> ((ChannelConnector) key.attachment()).getClient()
                         .map(value -> SimpleClientService.ROOT_USER_ID.equals(value.getId()))
