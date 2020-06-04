@@ -10,7 +10,7 @@ public class Rectangle {
     public Point upperLeftCorner;
     public Point bottomRightCorner;
 
-    public Rectangle(double x1, double y1, double x2, double y2) {
+    public Rectangle(int x1, int y1, int x2, int y2) {
         upperLeftCorner = new Point(x1, y1);
         bottomRightCorner = new Point(x2, y2);
     }

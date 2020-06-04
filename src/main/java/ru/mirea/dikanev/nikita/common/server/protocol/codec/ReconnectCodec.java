@@ -11,8 +11,8 @@ public class ReconnectCodec extends Codec<ReconnectPackage> {
     @Override
     public ByteBuffer encode(ByteBuffer buffer, ReconnectPackage reconnectPackage) {
         buffer.putInt(reconnectPackage.userId);
-        buffer.putDouble(reconnectPackage.posX);
-        buffer.putDouble(reconnectPackage.posY);
+        buffer.putInt(reconnectPackage.posX);
+        buffer.putInt(reconnectPackage.posY);
         putByteString(buffer, reconnectPackage.host);
         buffer.putInt(reconnectPackage.port);
 
@@ -22,8 +22,8 @@ public class ReconnectCodec extends Codec<ReconnectPackage> {
     @Override
     public ReconnectPackage decode(ByteBuffer buffer) {
         int id = buffer.getInt();
-        double x = buffer.getDouble();
-        double y = buffer.getDouble();
+        int x = buffer.getInt();
+        int y = buffer.getInt();
         byte[] host = readByteString(buffer);
         int port = buffer.getInt();
 
@@ -31,18 +31,18 @@ public class ReconnectCodec extends Codec<ReconnectPackage> {
     }
 
     public static int size(ReconnectPackage reconnectPackage) {
-        return stringBytes(reconnectPackage.host) + Integer.BYTES * 2 + Double.BYTES * 2;
+        return stringBytes(reconnectPackage.host) + Integer.BYTES * 4;
     }
 
     public static byte[] newReconnectPack(String host, int port) {
         return newReconnectPack(-1, -1, -1, host.getBytes(), port);
     }
 
-    public static byte[] newReconnectPack(double x, double y, String host, int port) {
+    public static byte[] newReconnectPack(int x, int y, String host, int port) {
         return newReconnectPack(-1, x, y, host.getBytes(), port);
     }
 
-    public static byte[] newReconnectPack(int id, double x, double y) {
+    public static byte[] newReconnectPack(int id, int x, int y) {
         return newReconnectPack(id, x, y, "".getBytes(), -1);
     }
 
@@ -50,7 +50,7 @@ public class ReconnectCodec extends Codec<ReconnectPackage> {
         return newReconnectPack(rp.userId, rp.posX, rp.posY, rp.host, rp.port);
     }
 
-    public static byte[] newReconnectPack(int id, double x, double y, byte[] host, int port) {
+    public static byte[] newReconnectPack(int id, int x, int y, byte[] host, int port) {
         ReconnectPackage reconnectPackage = new ReconnectPackage(id, x, y, host, port);
         ByteBuffer buffer = ByteBuffer.allocate(size(reconnectPackage));
 

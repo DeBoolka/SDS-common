@@ -19,7 +19,6 @@ import ru.mirea.dikanev.nikita.common.server.secure.Credentials;
 
 public class SimpleClientService implements ClientService {
 
-    public static final Integer ROOT_USER_ID = 0;
     public static final Point DEFAULT_POSITION = new Point(0, 0);
 
     private Map<Integer, UserInfo> users = new ConcurrentHashMap<>();//TODO: replace with user storage
@@ -28,12 +27,11 @@ public class SimpleClientService implements ClientService {
     private volatile AtomicInteger lastId = new AtomicInteger(1);
 
     {
-        users.put(ROOT_USER_ID, new UserInfo("root:root", true));
-        users.put(1, new UserInfo("admin:admin", true));
+        users.put(0, new UserInfo("admin:admin", true));
     }
 
     public static Client getRootClient() {
-        return new Client(ROOT_USER_ID, new Credentials("root", "root"));
+        return new UnauthenticatedClient();
     }
 
     @Override
@@ -94,8 +92,7 @@ public class SimpleClientService implements ClientService {
 
     @Override
     public boolean isAuth(Client client) {
-        return client != null &&
-                (client.getId() == SimpleClientService.ROOT_USER_ID || sessions.containsKey(client.getId()));
+        return client != null && sessions.containsKey(client.getId());
     }
 
     @Override
@@ -131,10 +128,6 @@ public class SimpleClientService implements ClientService {
     }
 
     private Optional<Integer> getClientIdByLoginAndPassword(String login, String password) {
-        if ("root".equals(login) && "root".equals(password)) {
-            return Optional.of(ROOT_USER_ID);
-        }
-
         String logPass = login + ":" + password;
         return users.entrySet()
                 .stream()

@@ -7,8 +7,8 @@ import lombok.ToString;
 @AllArgsConstructor
 public class Point {
 
-    public double x;
-    public double y;
+    public int x;
+    public int y;
 
     public Point(Point point) {
         this.x = point.x;

@@ -82,6 +82,8 @@ public class CellManagerMessageProcessor implements MessageProcessor {
         InetSocketAddress addr = new InetSocketAddress(new String(addrPack.host), addrPack.port);
         handler.setAddrCell(message.getFrom(), addr);
         log.info("Cell addr was added for {}: {}", message.getFrom(), addr);
+
+        getRectangle(handler, message);
     }
 
     private void getAddress(CellManagerHandler handler, Message message) {

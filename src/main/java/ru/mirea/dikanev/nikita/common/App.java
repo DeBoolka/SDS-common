@@ -19,43 +19,38 @@ import ru.mirea.dikanev.nikita.common.server.protocol.pack.MessagePackage;
 
 public class App {
 
+    public static final String LOCAL_HOST = "localhost";
+
+    public static final String cmHost = LOCAL_HOST;
+    public static final int cmPort = 11000;
+
+    public static final String cHost = LOCAL_HOST;
+    public static final int cPort = 12000;
+
+    public static final String sHost = LOCAL_HOST;
+    public static final int sPort = 13000;
+
+    public static final String uHost = LOCAL_HOST;
+    public static final int uPort = 18000;
+
     public static void main(String[] args) throws IOException, InterruptedException, AuthenticationException {
-        System.out.println("Server is starting!");
+        System.out.println("Main is starting!");
 
-        CellServer server = CellServer.create(1,
-                1,
-                new InetSocketAddress("localhost", 19000),
-                new InetSocketAddress("localhost", 12000));
-        server.start();
-//        Thread.sleep(1000);
-//        server.send(Message.create(null, Codes.SET_ADDRESS_ACTION, AddressCodec.newAddressPack("localhost", 12000)));
-//        masterDat();
-//        slaveDat();
-    }
+        CellManagerApp.startServer(uHost, uPort, cmHost, cmPort);
 
-    private static void masterDat() throws IOException, InterruptedException, AuthenticationException {
-        CellManagerServer master = CellManagerServer.create(1, 1);
-        master.start();
-        master.bind(new ServerSocketChannelConnector(new InetSocketAddress("127.0.0.1", 18000)));
-        master.bindCellAccepter(new ServerSocketChannelConnector(new InetSocketAddress("127.0.0.1", 19000)));
-    }
-
-    private static void slaveDat() throws IOException, InterruptedException, AuthenticationException {
-//        MessageHandler msgHandler = new SimpleMessageHandler();
-//        MessageServer slave = new SimpleMessageServer(1, msgHandler);
-        CellServer slave = SectorServer.create(1, 1,null, null);
-        SocketChannelConnector channel = new SocketChannelConnector(new InetSocketAddress("127.0.0.1", 19000));
-        slave.start();
-        slave.bind(channel);
-        Thread.sleep(100);
-
-        slave.send(Message.create(null, Codes.LOGIN_ACTION, LoginCodec.newLoginPack("admin", "admin")));
         Thread.sleep(2000);
-        slave.send(Message.send(null, MessageCodec.newMessagePack(MessagePackage.WORLD, "Hi WORLD2 from Cell1")));
+
+        CellApp.startServer(cmHost, cmPort, cHost, cPort);
+        CellApp.startServer(cmHost, cmPort, cHost, cPort + 1);
+        CellApp.startServer(cmHost, cmPort, cHost, cPort + 2);
+        CellApp.startServer(cmHost, cmPort, cHost, cPort + 3);
 
         Thread.sleep(5000);
-        System.out.println("I have woken up");
-        slave.send(Message.create(channel, Codes.RECONNECT_ACTION, ReconnectCodec.newReconnectPack("localhost", 11000)));
+
+        SectorApp.startServer(cHost, cPort, sHost, sPort);
+        SectorApp.startServer(cHost, cPort + 1, sHost, sPort + 1);
+        SectorApp.startServer(cHost, cPort + 2, sHost, sPort + 2);
+        SectorApp.startServer(cHost, cPort + 3, sHost, sPort + 3);
     }
 
 }

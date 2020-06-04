@@ -26,8 +26,8 @@ import ru.mirea.dikanev.nikita.common.server.service.connector.ConnectorService;
 @Log4j2
 public class CellManagerHandler extends SimpleMessageHandler {
 
-    public static final int WIDTH_WOLD = 1000;
-    public static final int HEIGHT_WOLD = 1000;
+    public static final int WIDTH_WOLD = 20;
+    public static final int HEIGHT_WOLD = 20;
 
     private List<Rectangle> rectangles;
     private Map<Rectangle, CellInfo> cells = new ConcurrentHashMap<>();
@@ -104,7 +104,7 @@ public class CellManagerHandler extends SimpleMessageHandler {
         preparedConnectors.clear();
     }
 
-    public void newCell(ChannelConnector connector) {
+    public synchronized void newCell(ChannelConnector connector) {
         cells.put(rectangles.get(cells.size()), new CellInfo(connector, null));
     }
 
@@ -112,7 +112,7 @@ public class CellManagerHandler extends SimpleMessageHandler {
         return getCellInfo(x, y).address;
     }
 
-    public void setAddrCell(ChannelConnector channel, InetSocketAddress address) {
+    public synchronized void setAddrCell(ChannelConnector channel, InetSocketAddress address) {
         cells.values()
                 .stream()
                 .filter(c -> c.channelConnector.equals(channel))

@@ -164,9 +164,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
             //Send only to Sectors excluding other Cells
             //And too this is a piece of shit.
             //If you want to plunge into shit, look at the communication method in the SectorMessageProcessor
-            return ((ChannelConnector) key.attachment()).getClient()
-                    .map(value -> !SimpleClientService.ROOT_USER_ID.equals(value.getId()))
-                    .orElse(true);
+            return ((ChannelConnector) key.attachment()) != handler.getRootConnector();
         });
     }
 
@@ -212,9 +210,10 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
 
         if (cellRectangle.isIntersectionBufferZone(BUFFER_ZONE_NEAR_BORDERS, position)) {
             reconnectService.push(posPackage.userId, client);
-            handler.sendMessage(Message.create(null,
-                    GET_SECTOR_ADDRESS_ACTION,
-                    PositionCodec.newPositionPack(posPackage.userId, position.x, position.y)), onlyParentServer());
+            handler.sendMessage(handler.getRootConnector().getChannel(),
+                    Message.create(null,
+                            GET_SECTOR_ADDRESS_ACTION,
+                            PositionCodec.newPositionPack(posPackage.userId, position.x, position.y)));
         }
     }
 
@@ -224,6 +223,8 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
         InetSocketAddress addr = new InetSocketAddress(new String(addrPack.host), addrPack.port);
         handler.setSector(message.getFrom(), addr);
         log.info("Sector addr was added for {}: {}", message.getFrom(), addr);
+
+        getRectangle(handler, message);
     }
 
     protected void getSectorAddr(CellHandler handler, Message message) {
@@ -261,6 +262,17 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
         ByteBuffer payload = message.payload();
         PositionPackage upperLeftCorner = positionCodec.decode(payload);
         PositionPackage bottomRightCorner = positionCodec.decode(payload);
+
+        if (upperLeftCorner.x == -1 && upperLeftCorner.y == -1
+                && bottomRightCorner.x == -1 && bottomRightCorner.y == -1) {
+
+            handler.sendMessage(handler.getRootConnector().getChannel(),
+                    Message.create(null,
+                            Codes.GET_RECTANGLE_ACTION,
+                            AddressCodec.newAddressPack(server.localServerAddr.getHostName(),
+                                    server.localServerAddr.getPort())));
+            return;
+        }
 
         this.cellRectangle = new Rectangle(upperLeftCorner.x,
                 upperLeftCorner.y,
@@ -324,25 +336,19 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                                             Message.create(null,
                                                     Codes.SET_CLIENT,
                                                     PositionCodec.newPositionPack(point.playerId,
-                                                            point.x(),
-                                                            point.y())));
+                                                            (int) point.x(),
+                                                            (int) point.y())));
                                     handler.sendMessage(connector.getChannel(),
                                             Message.create(null,
                                                     Codes.RECONNECT_ACTION,
                                                     ReconnectCodec.newReconnectPack(point.playerId,
-                                                            point.x(),
-                                                            point.y(),
+                                                            (int) point.x(),
+                                                            (int) point.y(),
                                                             addresses.get(i).getHostName().getBytes(),
                                                             addresses.get(i).getPort())));
                                 })));
 
         //TODO: The Sectors don't know about other players. After reconnecting, players will log out
-    }
-
-    protected Predicate<SelectionKey> onlyParentServer() {
-        return key -> ((ChannelConnector) key.attachment()).getClient()
-                .map(value -> SimpleClientService.ROOT_USER_ID.equals(value.getId()))
-                .orElse(false);
     }
 
     @Override

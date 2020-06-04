@@ -11,7 +11,7 @@ import ru.mirea.dikanev.nikita.common.server.secure.Credentials;
 @AllArgsConstructor
 public class Client {
 
-    private int id;
+    private int id = -1;
     private ChannelConnector channel;
     private Credentials credentials;
 

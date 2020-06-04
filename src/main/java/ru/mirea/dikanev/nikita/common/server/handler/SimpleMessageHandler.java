@@ -37,6 +37,8 @@ public class SimpleMessageHandler implements MessageHandler {
     private volatile boolean isRunning = false;
 
     private List<ChannelConnector> preparedConnectorsForBinding = null;
+    private List<CallBack> finishCallBacks = null;
+    private ChannelConnector rootConnector;
 
     @Override
     public void setUp(MessageProcessor processor) {
@@ -104,6 +106,7 @@ public class SimpleMessageHandler implements MessageHandler {
             this.selector = selector;
             isRunning = true;
             setUpRunning();
+            finishRun();
 
             while (true) {
                 service.changeOps(selector.keys());
@@ -126,6 +129,29 @@ public class SimpleMessageHandler implements MessageHandler {
         }
 
         log.info("Message handler has stopped");
+    }
+
+    public void addFinishCallback(CallBack callBack) {
+        if (finishCallBacks == null) {
+            finishCallBacks = new ArrayList<>();
+        }
+
+        finishCallBacks.add(callBack);
+    }
+
+    private void finishRun() {
+        if (finishCallBacks == null) {
+            return;
+        }
+
+        finishCallBacks.forEach(callBack -> {
+            try {
+                callBack.callback(this);
+            } catch (Exception e) {
+                log.warn("Callback failed", e);
+            }
+        });
+        finishCallBacks.clear();
     }
 
     /**
@@ -172,6 +198,10 @@ public class SimpleMessageHandler implements MessageHandler {
         }
 
         selector.selectedKeys().clear();
+    }
+
+    public interface CallBack {
+        void callback(MessageHandler handler);
     }
 
 }

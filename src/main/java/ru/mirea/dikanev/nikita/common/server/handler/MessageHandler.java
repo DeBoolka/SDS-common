@@ -33,4 +33,6 @@ public interface MessageHandler extends Runnable {
     void reconnect(ChannelConnector connector);
 
     boolean contains(ChannelConnector connector);
+
+    ChannelConnector getRootConnector();
 }

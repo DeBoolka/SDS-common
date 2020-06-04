@@ -18,8 +18,8 @@ import ru.mirea.dikanev.nikita.common.server.protocol.codec.AddressCodec;
 @Log4j2
 public class CellServer extends SimpleMessageServer {
 
-    protected InetSocketAddress remoteAddr;
-    protected InetSocketAddress localServerAddr;
+    public InetSocketAddress remoteAddr;
+    public InetSocketAddress localServerAddr;
 
     protected CellServer() {
     }
@@ -59,25 +59,12 @@ public class CellServer extends SimpleMessageServer {
 
     @Override
     public void start() {
-        super.start();
-        //TODO: bullshit. Rewrite condition
-        while (!((SimpleMessageHandler) handlers.get(0)).isRunning()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ignore) {
-            }
-        }
-
-
         log.info("Sending a local address to the Cell Manager");
-        send(Message.create(null,
+        ((SimpleMessageHandler) handlers.get(0)).addFinishCallback(handler -> handler.sendMessage(Message.create(null,
                 Codes.SET_ADDRESS_ACTION,
-                AddressCodec.newAddressPack(localServerAddr.getHostName(), localServerAddr.getPort())));
-        log.info("Getting a rectangle from the Cell Manager");
-        send(Message.create(null,
-                Codes.GET_RECTANGLE_ACTION,
-                AddressCodec.newAddressPack(localServerAddr.getHostName(), localServerAddr.getPort())));
+                AddressCodec.newAddressPack(localServerAddr.getHostName(), localServerAddr.getPort()))));
 
+        super.start();
     }
 
     public CellHandler bindClient(InetSocketAddress address) throws IOException, AuthenticationException {

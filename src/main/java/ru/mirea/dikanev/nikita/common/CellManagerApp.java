@@ -12,10 +12,22 @@ public class CellManagerApp {
     public static void main(String[] args) throws IOException, AuthenticationException {
         System.out.println("Server is starting!");
 
+        String uHost = args.length > 0 ? args[0] : "localhost";
+        int uPort = args.length > 1 ? Integer.parseInt(args[1]) : 18000;
+
+        String cmHost = args.length > 2 ? args[2] : "localhost";
+        int cmPort = args.length > 3 ? Integer.parseInt(args[3]) : 11000;
+
+        startServer(uHost, uPort, cmHost, cmPort);
+        return;
+    }
+
+    public static void startServer(String uHost, int uPort, String cmHost, int cmPort)
+            throws IOException, AuthenticationException {
         CellManagerServer master = CellManagerServer.create(1, 1);
         master.start();
-        master.bind(new ServerSocketChannelConnector(new InetSocketAddress("127.0.0.1", 18000)));
-        master.bindCellAccepter(new ServerSocketChannelConnector(new InetSocketAddress("127.0.0.1", 11000)));
+        master.bind(new ServerSocketChannelConnector(new InetSocketAddress(uHost, uPort)));
+        master.bindCellAccepter(new ServerSocketChannelConnector(new InetSocketAddress(cmHost, cmPort)));
     }
 
 }

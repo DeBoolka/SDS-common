@@ -65,7 +65,8 @@ public class CellHandler extends SimpleMessageHandler {
     }
 
     public void bindClient(InetSocketAddress address) throws IOException, AuthenticationException {
-        super.bind(ChannelConnectorProvider.openClientConnector(address));
+        setRootConnector(ChannelConnectorProvider.openClientConnector(address));
+        super.bind(getRootConnector());
     }
 
     public Map.Entry<ChannelConnector, InetSocketAddress> getSector(double x, double y) {
