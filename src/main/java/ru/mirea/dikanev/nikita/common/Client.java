@@ -33,6 +33,7 @@ public class Client {
     public static final String GET_SECTOR_ADDR_ACTION = "as";
     public static final String SET_ADDR_ACTION = "sa";
     public static final String SET_STATE_ACTION = "ss";
+    public static final String SUBSCRIBE_TO_POSITION_ACTION = "sb";
     public static final String BALANCE_ACTION = "b";
 
     public static final String DEFAULT_HOST = "127.0.0.1";
@@ -111,6 +112,9 @@ public class Client {
                             break;
                         case BALANCE_ACTION:
                             queue.put(toBalance());
+                            break;
+                        case SUBSCRIBE_TO_POSITION_ACTION:
+                            queue.put(toSubscribe());
                             break;
                     }
                 } catch (InterruptedException e) {
@@ -212,6 +216,8 @@ public class Client {
                 System.out.println(m);
                 id = m.receiverId;
                 return;
+            case Codes.SUBSCRIBED_POSITION_ACTION:
+                System.out.println("[subscribed]");
             case Codes.POSITION_ACTION:
             case Codes.SET_STATE_ACTION:
                 System.out.println(new PositionCodec().decode(buffer));
@@ -354,6 +360,20 @@ public class Client {
 
     private byte[] toBalance() {
         return addAction(Codes.BALANCE_ACTION, PositionCodec.newPositionPack(id, 0, 0));
+    }
+
+    private byte[] toSubscribe() {
+        System.out.println("Space (s/c/w):");
+        String line = scanner.nextLine();
+
+        short space = MessagePackage.SECTOR_SPACE;
+        if (line.toLowerCase().equals("c")) {
+            space = MessagePackage.CELL_SPACE;
+        } else if (line.toLowerCase().equals("w")) {
+            space = MessagePackage.WORLD;
+        }
+
+        return addAction(Codes.SUBSCRIBE_TO_POSITION_ACTION, MessageCodec.newByteMessagePack(space, id, "WTF"));
     }
 
     private byte[] addAction(int action, byte[] buffer) {

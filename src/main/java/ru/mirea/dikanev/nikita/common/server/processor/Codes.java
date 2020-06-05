@@ -16,5 +16,7 @@ public interface Codes {
     int GET_RECTANGLE_ACTION = 0x92;
     int SET_STATE_ACTION = 0x93;
     int BALANCE_ACTION = 0x94;
+    int SUBSCRIBE_TO_POSITION_ACTION = 0x95;
+    int SUBSCRIBED_POSITION_ACTION = 0x96;
 
 }

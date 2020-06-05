@@ -15,13 +15,13 @@ import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.handler.CellManagerHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.AddressCodec;
+import ru.mirea.dikanev.nikita.common.server.protocol.codec.MessageCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.PositionCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.codec.ReconnectCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.AddressPackage;
+import ru.mirea.dikanev.nikita.common.server.protocol.pack.MessagePackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.PositionPackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.ReconnectPackage;
-import ru.mirea.dikanev.nikita.common.server.service.client.ReconnectService;
-import ru.mirea.dikanev.nikita.common.server.service.client.SimpleReconnectService;
 
 @Log4j2
 public class CellManagerMessageProcessor implements MessageProcessor {
@@ -32,9 +32,11 @@ public class CellManagerMessageProcessor implements MessageProcessor {
 
     private ReconnectCodec reconnectCodec = new ReconnectCodec();
     private PositionCodec positionCodec = new PositionCodec();
+    private MessageCodec messageCodec = new MessageCodec();
     private AddressCodec addressCodec = new AddressCodec();
 
     private Map<Integer, ChannelConnector> reconnectingChannels = new ConcurrentHashMap<>();
+    protected Map<Integer, ChannelConnector> worldSubscribes = new ConcurrentHashMap<>();
 
     public CellManagerMessageProcessor(CellManagerServer server, int nThreads) {
         this.server = server;
@@ -59,6 +61,12 @@ public class CellManagerMessageProcessor implements MessageProcessor {
                     return;
                 } else if (Codes.RECONNECT_ACTION == message.getAction()) {
                     reconnectAddress((CellManagerHandler) handler, message);
+                    return;
+                } else if (Codes.SUBSCRIBE_TO_POSITION_ACTION == message.getAction()) {
+                    subscribeToPosition((CellManagerHandler) handler, message);
+                    return;
+                } else if (Codes.SUBSCRIBED_POSITION_ACTION == message.getAction()) {
+                    subscribedPosition((CellManagerHandler) handler, message);
                     return;
                 }
                 server.getMessageHandlers().forEach(h -> h.sendMessage(message));
@@ -126,6 +134,21 @@ public class CellManagerMessageProcessor implements MessageProcessor {
                         Codes.SET_RECTANGLE_ACTION,
                         PositionCodec.newPositionPack(-1, rectangle.upperLeftCorner.x, rectangle.upperLeftCorner.y),
                         PositionCodec.newPositionPack(-1, rectangle.bottomRightCorner.x, rectangle.bottomRightCorner.y)));
+    }
+
+    private void subscribeToPosition(CellManagerHandler handler, Message message) {
+        MessagePackage msgPack = messageCodec.decode(message.payload());
+        worldSubscribes.put(msgPack.receiverId, message.getFrom());
+        server.getMessageHandlers().forEach(h -> h.sendMessage(message));
+    }
+
+    protected void subscribedPosition(CellManagerHandler handler, Message message) {
+        PositionPackage posPack = positionCodec.decode(message.payload());
+        worldSubscribes.forEach((id, connector) -> {
+            if (id != posPack.userId) {
+                handler.sendMessage(connector.getChannel(), message);
+            }
+        });
     }
 
     @Override

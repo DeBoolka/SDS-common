@@ -3,6 +3,7 @@ package ru.mirea.dikanev.nikita.common.server.service.client;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -24,7 +25,7 @@ public class SimpleClientService implements ClientService {
     private Map<Integer, UserInfo> users = new ConcurrentHashMap<>();//TODO: replace with user storage
     private Map<Integer, SessionInfo> sessions = new ConcurrentHashMap<>();
 
-    private volatile AtomicInteger lastId = new AtomicInteger(1);
+    private Random random = new Random();
 
     {
         users.put(0, new UserInfo("admin:admin", true));
@@ -40,7 +41,7 @@ public class SimpleClientService implements ClientService {
 
         Optional<Integer> id = getClientIdByLoginAndPassword(login, password);
         if (id.isEmpty()) {
-            id = Optional.of(lastId.getAndIncrement());
+            id = Optional.of(Math.abs(random.nextInt()));
         }
 
         Client client = createSession(id.get(), login, password);

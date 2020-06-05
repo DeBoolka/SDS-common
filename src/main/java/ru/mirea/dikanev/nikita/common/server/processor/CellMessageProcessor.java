@@ -2,11 +2,12 @@ package ru.mirea.dikanev.nikita.common.server.processor;
 
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -63,6 +64,9 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
 
     private Rectangle cellRectangle = new Rectangle(0, 0, 0, 0);
 
+    protected Map<Integer, ChannelConnector> cellSubscribes = new ConcurrentHashMap<>();
+    protected Map<Integer, ChannelConnector> worldSubscribes = new ConcurrentHashMap<>();
+
     public CellMessageProcessor(CellServer server, int nThreads) {
         this.server = server;
         this.messageTasks = Executors.newFixedThreadPool(nThreads);
@@ -83,7 +87,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
         });
     }
 
-    private void action(CellHandler handler, int actionCode, Message message) {
+    protected void action(CellHandler handler, int actionCode, Message message) {
         switch (actionCode) {
             case LOGIN_ACTION:
                 login(handler, message);
@@ -123,6 +127,12 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                 return;
             case BALANCE_ACTION:
                 balanceAction(handler, message);
+                return;
+            case SUBSCRIBE_TO_POSITION_ACTION:
+                subscribeToPosition(handler, message);
+                return;
+            case SUBSCRIBED_POSITION_ACTION:
+                subscribedPosition(handler, message);
                 return;
             default:
                 log.warn("Unknown action code: {}", actionCode);
@@ -215,6 +225,23 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                             GET_SECTOR_ADDRESS_ACTION,
                             PositionCodec.newPositionPack(posPackage.userId, position.x, position.y)));
         }
+
+        cellSubscribes.forEach((id, connector) -> {
+            if (id != posPackage.userId) {
+                handler.sendMessage(connector.getChannel(),
+                        Message.create(null,
+                                Codes.SUBSCRIBED_POSITION_ACTION,
+                                PositionCodec.newPositionPack(posPackage.userId, position.x, position.y)));
+            }
+        });
+        worldSubscribes.forEach((id, connector) -> {
+            if (id != posPackage.userId) {
+                handler.sendMessage(connector.getChannel(),
+                        Message.create(null,
+                                Codes.SUBSCRIBED_POSITION_ACTION,
+                                PositionCodec.newPositionPack(posPackage.userId, position.x, position.y)));
+            }
+        });
     }
 
     protected void setSectorAddr(CellHandler handler, Message message) {
@@ -263,8 +290,8 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
         PositionPackage upperLeftCorner = positionCodec.decode(payload);
         PositionPackage bottomRightCorner = positionCodec.decode(payload);
 
-        if (upperLeftCorner.x == -1 && upperLeftCorner.y == -1
-                && bottomRightCorner.x == -1 && bottomRightCorner.y == -1) {
+        if (upperLeftCorner.x == -1 && upperLeftCorner.y == -1 && bottomRightCorner.x == -1 &&
+                bottomRightCorner.y == -1) {
 
             handler.sendMessage(handler.getRootConnector().getChannel(),
                     Message.create(null,
@@ -289,7 +316,9 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                 Message.create(null,
                         Codes.SET_RECTANGLE_ACTION,
                         PositionCodec.newPositionPack(-1, rectangle.upperLeftCorner.x, rectangle.upperLeftCorner.y),
-                        PositionCodec.newPositionPack(-1, rectangle.bottomRightCorner.x, rectangle.bottomRightCorner.y)));
+                        PositionCodec.newPositionPack(-1,
+                                rectangle.bottomRightCorner.x,
+                                rectangle.bottomRightCorner.y)));
     }
 
     protected void setState(CellHandler handler, Message message) {
@@ -328,27 +357,46 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
         List<InetSocketAddress> addresses = List.copyOf(handler.getSectorAddresses().values());
         Balancer balancer = new Balancer(points).cluster(addresses.size());
         IntStream.range(0, addresses.size())
-                .forEach(i -> balancer.clusters()
-                        .get(i)
-                        .forEach(point -> handler.getSectors()
-                                .forEach(connector -> {
-                                    handler.sendMessage(connector.getChannel(),
-                                            Message.create(null,
-                                                    Codes.SET_CLIENT,
-                                                    PositionCodec.newPositionPack(point.playerId,
-                                                            (int) point.x(),
-                                                            (int) point.y())));
-                                    handler.sendMessage(connector.getChannel(),
-                                            Message.create(null,
-                                                    Codes.RECONNECT_ACTION,
-                                                    ReconnectCodec.newReconnectPack(point.playerId,
-                                                            (int) point.x(),
-                                                            (int) point.y(),
-                                                            addresses.get(i).getHostName().getBytes(),
-                                                            addresses.get(i).getPort())));
-                                })));
+                .forEach(i -> balancer.clusters().get(i).forEach(point -> handler.getSectors().forEach(connector -> {
+                    handler.sendMessage(connector.getChannel(),
+                            Message.create(null,
+                                    Codes.SET_CLIENT,
+                                    PositionCodec.newPositionPack(point.playerId, (int) point.x(), (int) point.y())));
+                    handler.sendMessage(connector.getChannel(),
+                            Message.create(null,
+                                    Codes.RECONNECT_ACTION,
+                                    ReconnectCodec.newReconnectPack(point.playerId,
+                                            (int) point.x(),
+                                            (int) point.y(),
+                                            addresses.get(i).getHostName().getBytes(),
+                                            addresses.get(i).getPort())));
+                })));
+    }
 
-        //TODO: The Sectors don't know about other players. After reconnecting, players will log out
+    private void subscribeToPosition(CellHandler handler, Message message) {
+        MessagePackage msgPack = messageCodec.decode(message.payload());
+        if (msgPack.space == MessagePackage.CELL_SPACE) {
+            cellSubscribes.put(msgPack.receiverId, message.getFrom());
+        } else {
+            worldSubscribes.put(msgPack.receiverId, message.getFrom());
+        }
+
+        if (msgPack.space == MessagePackage.WORLD && message.getFrom() != handler.getRootConnector()) {
+            handler.sendMessage(handler.getRootConnector().getChannel(), message);
+        }
+    }
+
+    protected void subscribedPosition(CellHandler handler, Message message) {
+        PositionPackage posPack = positionCodec.decode(message.payload());
+        subscribers().forEach((id, connector) -> {
+            if (id != posPack.userId && connector != handler.getRootConnector()) {
+                handler.sendMessage(connector.getChannel(), message);
+            }
+        });
+    }
+
+    protected Map<Integer, ChannelConnector> subscribers() {
+        return worldSubscribes;
     }
 
     @Override

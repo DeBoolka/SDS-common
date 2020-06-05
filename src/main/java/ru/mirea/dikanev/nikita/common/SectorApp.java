@@ -16,7 +16,7 @@ public class SectorApp {
         int cPort = args.length > 1 ? Integer.parseInt(args[1]) : 12000;
 
         String sHost = args.length > 2 ? args[2] : "localhost";
-        int sPort = args.length > 3 ? Integer.parseInt(args[3]) : 13000;
+        int sPort = args.length > 3 ? Integer.parseInt(args[3]) : 13009;
 
         startServer(cHost, cPort, sHost, sPort);
     }

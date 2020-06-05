@@ -48,6 +48,7 @@ public class App {
         Thread.sleep(5000);
 
         SectorApp.startServer(cHost, cPort, sHost, sPort);
+        SectorApp.startServer(cHost, cPort, sHost, sPort + 10);
         SectorApp.startServer(cHost, cPort + 1, sHost, sPort + 1);
         SectorApp.startServer(cHost, cPort + 2, sHost, sPort + 2);
         SectorApp.startServer(cHost, cPort + 3, sHost, sPort + 3);

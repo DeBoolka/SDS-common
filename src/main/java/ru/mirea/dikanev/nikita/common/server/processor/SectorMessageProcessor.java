@@ -1,19 +1,36 @@
 package ru.mirea.dikanev.nikita.common.server.processor;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import ru.mirea.dikanev.nikita.common.server.CellServer;
+import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.handler.CellHandler;
+import ru.mirea.dikanev.nikita.common.server.protocol.codec.PositionCodec;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.MessagePackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.PositionPackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.ReconnectPackage;
 
 public class SectorMessageProcessor extends CellMessageProcessor {
 
+    protected Map<Integer, ChannelConnector> sectorSubscribes = new ConcurrentHashMap<>();
+
     public SectorMessageProcessor(CellServer server, int nThreads) {
         super(server, nThreads);
+    }
+
+    @Override
+    protected void action(CellHandler handler, int actionCode, Message message) {
+        switch (actionCode) {
+            case SUBSCRIBE_TO_POSITION_ACTION:
+                subscribeToPosition(handler, message);
+                return;
+        }
+
+        super.action(handler, actionCode, message);
     }
 
     @Override
@@ -55,6 +72,13 @@ public class SectorMessageProcessor extends CellMessageProcessor {
         //send to the cell
         ping(message);
         handler.sendMessage(handler.getRootConnector().getChannel(), message);
+
+        PositionPackage posPack = positionCodec.decode(message.payload());
+        sectorSubscribes.forEach((id, connector) -> handler.sendMessage(connector.getChannel(),
+                Message.create(null,
+                        Codes.SUBSCRIBED_POSITION_ACTION,
+                        PositionCodec.newPositionPack(posPack.userId, posPack.x, posPack.y))));
+
     }
 
     @Override
@@ -72,5 +96,20 @@ public class SectorMessageProcessor extends CellMessageProcessor {
         handler.sendMessage(handler.getRootConnector().getChannel(), message);
 
         handler.sendMessage(message.getFrom().getChannel(), Message.send(null, "State has been set"));
+    }
+
+    private void subscribeToPosition(CellHandler handler, Message message) {
+        MessagePackage msgPack = messageCodec.decode(message.payload());
+        if (msgPack.space != MessagePackage.SECTOR_SPACE) {
+            cellSubscribes.put(msgPack.receiverId, message.getFrom());
+            handler.sendMessage(handler.getRootConnector().getChannel(), message);
+            return;
+        }
+        sectorSubscribes.put(msgPack.receiverId, message.getFrom());
+    }
+
+    @Override
+    protected Map<Integer, ChannelConnector> subscribers() {
+        return cellSubscribes;
     }
 }

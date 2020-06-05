@@ -71,7 +71,7 @@ public class CellHandler extends SimpleMessageHandler {
 
     public Map.Entry<ChannelConnector, InetSocketAddress> getSector(double x, double y) {
         //get accepting sockets and return any address
-        return sectors.entrySet().stream().sorted().skip((int)((x + 2*y) % sectors.size())).findFirst().orElseThrow();
+        return sectors.entrySet().stream().findAny().orElseThrow();
     }
 
     public InetSocketAddress getAddrSector(double x, double y) {
