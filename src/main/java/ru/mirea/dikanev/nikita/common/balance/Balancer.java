@@ -9,6 +9,7 @@ import java.util.stream.IntStream;
 
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.math3.ml.clustering.Cluster;
+import org.apache.commons.math3.ml.distance.ManhattanDistance;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.Clusterer;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.Voronoi;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.Graph;
@@ -64,14 +65,17 @@ public class Balancer {
 
     private double calculateEps() {
         log.info("Diagram Voronoi is being built");
+        ManhattanDistance distance = new ManhattanDistance();
         Voronoi voronoi = new Voronoi(points);
         graph = voronoi.getGraph();
         return voronoi.getGraph()
                 .edgeStream()
-                .mapToDouble(edge -> Math.sqrt(
-                        (edge.getSite2().x() - edge.getSite1().x()) * (edge.getSite2().x() - edge.getSite1().x()) +
-                                (edge.getSite2().y() - edge.getSite1().y()) *
-                                        (edge.getSite2().y() - edge.getSite1().y())))
+                .mapToDouble(edge -> distance.compute(new double[]{edge.getSite1().x(), edge.getSite1().y()},
+                        new double[]{edge.getSite2().x(), edge.getSite2().y()}))
+//                .mapToDouble(edge -> Math.sqrt(
+//                        (edge.getSite2().x() - edge.getSite1().x()) * (edge.getSite2().x() - edge.getSite1().x()) +
+//                                (edge.getSite2().y() - edge.getSite1().y()) *
+//                                        (edge.getSite2().y() - edge.getSite1().y())))
                 .average()
                 .getAsDouble();
     }

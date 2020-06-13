@@ -87,7 +87,7 @@ public class MapView extends JFrame implements Runnable {
             g2.setColor(new Color(r.nextFloat(), r.nextFloat(), r.nextFloat()));
 
             g2.fillOval(x, y, (int) POINT_SIZE, (int) POINT_SIZE);
-            g2.drawString(String.valueOf(info.cluster), x + 9, y + 9);
+            g2.drawString(String.valueOf(info.cluster), x, y);
         });
     }
 

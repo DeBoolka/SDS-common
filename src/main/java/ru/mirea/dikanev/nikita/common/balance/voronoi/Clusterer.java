@@ -14,6 +14,7 @@ import org.apache.commons.math3.ml.clustering.Cluster;
 import org.apache.commons.math3.ml.clustering.Clusterable;
 import org.apache.commons.math3.ml.distance.DistanceMeasure;
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
+import org.apache.commons.math3.ml.distance.ManhattanDistance;
 import org.apache.commons.math3.util.MathUtils;
 
 public class Clusterer<T extends Clusterable> extends org.apache.commons.math3.ml.clustering.Clusterer<T> {
@@ -43,7 +44,7 @@ public class Clusterer<T extends Clusterable> extends org.apache.commons.math3.m
      */
     public Clusterer(final double eps, final int minPts)
             throws NotPositiveException {
-        this(eps, minPts, new EuclideanDistance());
+        this(eps, minPts, new ManhattanDistance());
     }
 
     /**
