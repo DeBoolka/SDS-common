@@ -10,7 +10,7 @@ import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 public class SectorApp {
 
     public static void main(String[] args) throws IOException, AuthenticationException {
-        System.out.println("Server is starting!");
+        System.out.println("Server is being started!");
 
         String cHost = args.length > 0 ? args[0] : "localhost";
         int cPort = args.length > 1 ? Integer.parseInt(args[1]) : 12000;

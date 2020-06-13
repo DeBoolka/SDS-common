@@ -63,7 +63,7 @@ public class Balancer {
     }
 
     private double calculateEps() {
-        log.info("Diagram Voronoi is building");
+        log.info("Diagram Voronoi is being built");
         Voronoi voronoi = new Voronoi(points);
         graph = voronoi.getGraph();
         return voronoi.getGraph()
@@ -77,7 +77,7 @@ public class Balancer {
     }
 
     private void reduce(int countClusters) {
-        log.info("Clusters are reducing");
+        log.info("Clusters are being reduced");
         final int averageClusterSize = (int) (points.size() / countClusters * AVERAGE_ERROR);
 
         for (int i = 0; i < clusters.size(); i++) {
@@ -101,7 +101,7 @@ public class Balancer {
     }
 
     private void reduceTo(int countClusters) {
-        log.info("Clusters are reducing to {}", countClusters);
+        log.info("Clusters are being reduced to {}", countClusters);
         final int averageClusterSize = (int) (points.size() / countClusters * AVERAGE_ERROR);
         int countReducedClusters = clusters.size() - countClusters;
 
@@ -110,7 +110,7 @@ public class Balancer {
 
             for (int j = countClusters - 1; !reducedCluster.isEmpty(); j--) {
                 List<VoronoiPoint> increaseCluster = clusters.get(j);
-                while (increaseCluster.size() < averageClusterSize && !reducedCluster.isEmpty()) {
+                while (increaseCluster.size() <= averageClusterSize && !reducedCluster.isEmpty()) {
                     increaseCluster.add(reducedCluster.remove(reducedCluster.size() - 1));
                 }
             }
@@ -118,12 +118,12 @@ public class Balancer {
     }
 
     private void increase(int countClusters) {
-        log.info("Clusters are increasing");
+        log.info("Clusters are being increased");
         final int averageClusterSize = (int) (points.size() / countClusters * AVERAGE_ERROR);
         Comparator<List<VoronoiPoint>> comparator = Comparator.comparingInt(List::size);
         clusters.sort(comparator.reversed());
 
-        for (int i = 0; i < clusters.size(); i++) {
+        for (int i = 0; i < clusters.size() - 1; i++) {
             int currentClusterSize = clusters.get(i).size();
             if (currentClusterSize >= averageClusterSize ||
                     currentClusterSize + lastCluster().size() > averageClusterSize) {
@@ -138,7 +138,7 @@ public class Balancer {
     }
 
     private void increaseTo(int countClusters) {
-        log.info("Clusters are increasing to {}", countClusters);
+        log.info("Clusters are being increased to {}", countClusters);
         final int averageClusterSize = points.size() / countClusters;
         final int countMissingClusters = countClusters - clusters.size();
         final int countReducedClusters =clusters.size();

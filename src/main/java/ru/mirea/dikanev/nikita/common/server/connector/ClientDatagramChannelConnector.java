@@ -90,7 +90,7 @@ public  class ClientDatagramChannelConnector implements ChannelConnector {
             }
         }
 
-        System.out.println(String.format("R: %s << %s", channel.getLocalAddress(), channel.getRemoteAddress()));
+//        System.out.println(String.format("R: %s << %s", channel.getLocalAddress(), channel.getRemoteAddress()));
         return channel.read(readBuffer);
     }
 

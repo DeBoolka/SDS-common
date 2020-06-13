@@ -120,7 +120,9 @@ public class Clusterer<T extends Clusterable> extends org.apache.commons.math3.m
                 cluster.addPoint(point);
             }
         });
-        clusters.add(cluster);
+        if (!cluster.getPoints().isEmpty()) {
+            clusters.add(cluster);
+        }
 
         return clusters;
     }

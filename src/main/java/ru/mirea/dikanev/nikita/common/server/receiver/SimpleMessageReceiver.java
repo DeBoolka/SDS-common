@@ -60,7 +60,7 @@ public class SimpleMessageReceiver implements MessageReceiver {
             Message message = Message.createWithAction(connector, ByteBuffer.wrap(messageCopy));
             readBuffer.position(len + readBuffer.position());
 
-            System.out.println("[Read new package] - Action: " + message.getAction());
+            log.info("[New package was read] - Len: {} | Action: {}", len, message.getAction());
             processor.process(handler, message);
         }
 

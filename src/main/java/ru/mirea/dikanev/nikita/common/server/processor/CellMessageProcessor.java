@@ -67,6 +67,8 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
     protected Map<Integer, ChannelConnector> cellSubscribes = new ConcurrentHashMap<>();
     protected Map<Integer, ChannelConnector> worldSubscribes = new ConcurrentHashMap<>();
 
+    private  static Object lock = new Object();
+
     public CellMessageProcessor(CellServer server, int nThreads) {
         this.server = server;
         this.messageTasks = Executors.newFixedThreadPool(nThreads);
@@ -200,48 +202,56 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
     }
 
     protected void position(CellHandler handler, Message message) {
-        PositionPackage posPackage = positionCodec.decode(message.payload());
-        Client client = message.getFrom().getClient().orElse(null);
-        if (client == null || posPackage.userId == -1) {
-            return;
-        }
+        synchronized (lock) {
+            PositionPackage posPackage = positionCodec.decode(message.payload());
+            Client client = message.getFrom().getClient().orElse(null);
+            if (client == null || posPackage.userId == -1) {
+                return;
+            }
 
-        Point moveVector = new Point(posPackage.x, posPackage.y);
-        Point position = playerService.getMap()
-                .computeIfAbsent(posPackage.userId, k -> new PlayerState(new Point(0, 0))).position;
+            Point moveVector = new Point(posPackage.x, posPackage.y);
+            Point position = playerService.getMap()
+                    .computeIfAbsent(posPackage.userId, k -> new PlayerState(new Point(0, 0))).position;
 
-        position.x += moveVector.x;
-        position.y += moveVector.y;
+            log.info("User {} moved to [{}, {}] from [{}, {}]",
+                    posPackage.userId,
+                    position.x + moveVector.x,
+                    position.y + moveVector.y,
+                    position.x,
+                    position.y);
+            position.x += moveVector.x;
+            position.y += moveVector.y;
 
-        handler.sendMessage(message.getFrom().getChannel(),
-                Message.create(null,
-                        SET_STATE_ACTION,
-                        PositionCodec.newPositionPack(posPackage.userId, position.x, position.y)));
-
-        if (cellRectangle.isIntersectionBufferZone(BUFFER_ZONE_NEAR_BORDERS, position)) {
-            reconnectService.push(posPackage.userId, client);
-            handler.sendMessage(handler.getRootConnector().getChannel(),
+            handler.sendMessage(message.getFrom().getChannel(),
                     Message.create(null,
-                            GET_SECTOR_ADDRESS_ACTION,
+                            SET_STATE_ACTION,
                             PositionCodec.newPositionPack(posPackage.userId, position.x, position.y)));
-        }
 
-        cellSubscribes.forEach((id, connector) -> {
-            if (id != posPackage.userId) {
-                handler.sendMessage(connector.getChannel(),
+            if (cellRectangle.isIntersectionBufferZone(BUFFER_ZONE_NEAR_BORDERS, position)) {
+                reconnectService.push(posPackage.userId, client);
+                handler.sendMessage(handler.getRootConnector().getChannel(),
                         Message.create(null,
-                                Codes.SUBSCRIBED_POSITION_ACTION,
+                                GET_SECTOR_ADDRESS_ACTION,
                                 PositionCodec.newPositionPack(posPackage.userId, position.x, position.y)));
             }
-        });
-        worldSubscribes.forEach((id, connector) -> {
-            if (id != posPackage.userId) {
-                handler.sendMessage(connector.getChannel(),
-                        Message.create(null,
-                                Codes.SUBSCRIBED_POSITION_ACTION,
-                                PositionCodec.newPositionPack(posPackage.userId, position.x, position.y)));
-            }
-        });
+
+            cellSubscribes.forEach((id, connector) -> {
+                if (id != posPackage.userId) {
+                    handler.sendMessage(connector.getChannel(),
+                            Message.create(null,
+                                    Codes.SUBSCRIBED_POSITION_ACTION,
+                                    PositionCodec.newPositionPack(posPackage.userId, position.x, position.y)));
+                }
+            });
+            worldSubscribes.forEach((id, connector) -> {
+                if (id != posPackage.userId) {
+                    handler.sendMessage(connector.getChannel(),
+                            Message.create(null,
+                                    Codes.SUBSCRIBED_POSITION_ACTION,
+                                    PositionCodec.newPositionPack(posPackage.userId, position.x, position.y)));
+                }
+            });
+        }
     }
 
     protected void setSectorAddr(CellHandler handler, Message message) {

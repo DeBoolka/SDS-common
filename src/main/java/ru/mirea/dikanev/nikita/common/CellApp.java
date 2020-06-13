@@ -9,7 +9,7 @@ import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 public class CellApp {
 
     public static void main(String... args) throws IOException, AuthenticationException {
-        System.out.println("Server is starting!");
+        System.out.println("Server is being started!");
 
         String cmHost = args.length > 0 ? args[0] : "localhost";
         int cmPort = args.length > 1 ? Integer.parseInt(args[1]) : 11000;

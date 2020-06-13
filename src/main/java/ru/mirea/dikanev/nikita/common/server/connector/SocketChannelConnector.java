@@ -58,7 +58,8 @@ public class SocketChannelConnector implements ChannelConnector {
         channel = SocketChannel.open();
         channel.connect(address);
         channel.finishConnect();
-        System.out.println(String.format("New: %s", channel.getLocalAddress()));
+        log.info("New channel for {}", channel.getLocalAddress());
+//        System.out.println(String.format("New: %s", channel.getLocalAddress()));
         operation = SelectionKey.OP_CONNECT | SelectionKey.OP_READ;
     }
 
@@ -70,18 +71,20 @@ public class SocketChannelConnector implements ChannelConnector {
     @Override
     public void onConnect(Selector selector, MessageHandler handler) throws IOException {
         channel.finishConnect();
+        log.info("New connection between {} and {}", channel.getLocalAddress(), channel.getRemoteAddress());
         System.out.println(String.format("C: %s -- %s", channel.getLocalAddress(), channel.getRemoteAddress()));
     }
 
     @Override
     public int onRead(Selector selector, MessageHandler handler, ByteBuffer readBuffer) throws IOException {
-        System.out.println(String.format("R: %s << %s", channel.getLocalAddress(), channel.getRemoteAddress()));
+//        System.out.println(String.format("R: %s << %s", channel.getLocalAddress(), channel.getRemoteAddress()));
         return channel.read(readBuffer);
     }
 
     @Override
     public int onWrite(Selector selector, MessageHandler handler, ByteBuffer writeBuffer) throws IOException {
-        System.out.println(String.format("W: %s >> %s", channel.getLocalAddress(), channel.getRemoteAddress()));
+//        System.out.println(String.format("W: %s >> %s", channel.getLocalAddress(), channel.getRemoteAddress()));
+        log.info("Write from {} to {}", channel.getLocalAddress(), channel.getRemoteAddress());
         return channel.write(writeBuffer);
     }
 

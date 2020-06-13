@@ -10,11 +10,13 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Optional;
 
+import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.entity.client.Client;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
 import ru.mirea.dikanev.nikita.common.server.service.client.SimpleClientService;
 
+@Log4j2
 public class ServerSocketChannelConnector implements ChannelConnector {
 
     private ServerSocketChannel channel;
@@ -61,7 +63,8 @@ public class ServerSocketChannelConnector implements ChannelConnector {
         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) getChannel();
 
         SocketChannel newChannel = serverSocketChannel.accept();
-        System.out.println(String.format("A: %s -- %s", newChannel.getLocalAddress(), newChannel.getRemoteAddress()));
+        log.info("New channel between {} and {}", newChannel.getLocalAddress(), newChannel.getRemoteAddress());
+//        System.out.println(String.format("A: %s -- %s", newChannel.getLocalAddress(), newChannel.getRemoteAddress()));
         return new SocketChannelConnector(newChannel);
     }
 

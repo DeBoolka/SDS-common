@@ -64,7 +64,7 @@ public class Client {
         System.out.println("port: ");
         String port = scanner.nextLine();
         if (port.isBlank() || port.equals("0") || port.equals("-")) {
-            System.out.println("[WARNING] Default port");
+            log.warn("[WARNING] Default port");
             port = String.valueOf(PORT);
         }
         for (char ch : port.toCharArray()) {
@@ -136,7 +136,7 @@ public class Client {
         channel.configureBlocking(false);
         channel.register(selector, SelectionKey.OP_CONNECT);
 
-        System.out.println(String.format("Connecting to server [%s:%s]", host, port));
+        System.out.println(String.format("Connect to server [%s:%s]", host, port));
         channel.connect(new InetSocketAddress(host, Integer.parseInt(port)));
 
         while (true) {

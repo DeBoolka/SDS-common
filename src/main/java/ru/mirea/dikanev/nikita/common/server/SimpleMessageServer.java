@@ -57,7 +57,8 @@ public class SimpleMessageServer implements MessageServer {
     }
 
     public void start() {
-        log.info("Server is starting...\nNumber of handlers: {}", handlers.size());
+        log.info("Server is being started...");
+        log.info("Number of handlers: {}", handlers.size());
         handlersExecutor = Executors.newFixedThreadPool(handlers.size());
         handlers.forEach(handler -> handlersExecutor.submit(handler));
 
@@ -65,9 +66,9 @@ public class SimpleMessageServer implements MessageServer {
     }
 
     public void stop() throws InterruptedException {
-        log.info("Server is stopping...");
+        log.info("Server is being stopped...");
 
-        log.info("Handlers are shutdowning");
+        log.info("Handlers are being shutdowned");
         handlersExecutor.shutdownNow();
         handlersExecutor.awaitTermination(5, TimeUnit.SECONDS);
 

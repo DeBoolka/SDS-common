@@ -39,9 +39,9 @@ public class CellServer extends SimpleMessageServer {
             }
         }).toArray(CellHandler[]::new));
 
-        log.info("Connecting to Cell Manager: {}", cellManager);
+        log.info("Connect to Cell Manager: {}", cellManager);
         server.bindClient(cellManager);
-        log.info("Creating a server socket: {}", localAddress);
+        log.info("Create a server socket: {}", localAddress);
         server.bindServer(localAddress);
 
         server.remoteAddr = cellManager;
@@ -59,7 +59,7 @@ public class CellServer extends SimpleMessageServer {
 
     @Override
     public void start() {
-        log.info("Sending a local address to the Cell Manager");
+        log.info("A local address is sent to the Cell Manager");
         ((SimpleMessageHandler) handlers.get(0)).addFinishCallback(handler -> handler.sendMessage(Message.create(null,
                 Codes.SET_ADDRESS_ACTION,
                 AddressCodec.newAddressPack(localServerAddr.getHostName(), localServerAddr.getPort()))));

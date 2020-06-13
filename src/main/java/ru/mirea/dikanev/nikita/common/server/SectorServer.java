@@ -5,16 +5,10 @@ import java.net.InetSocketAddress;
 import java.util.stream.IntStream;
 
 import lombok.extern.log4j.Log4j2;
-import ru.mirea.dikanev.nikita.common.math.Rectangle;
-import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.exception.AuthenticationException;
 import ru.mirea.dikanev.nikita.common.server.exception.HandlerInternalException;
 import ru.mirea.dikanev.nikita.common.server.handler.CellHandler;
-import ru.mirea.dikanev.nikita.common.server.handler.SimpleMessageHandler;
-import ru.mirea.dikanev.nikita.common.server.processor.CellMessageProcessor;
-import ru.mirea.dikanev.nikita.common.server.processor.Codes;
 import ru.mirea.dikanev.nikita.common.server.processor.SectorMessageProcessor;
-import ru.mirea.dikanev.nikita.common.server.protocol.codec.AddressCodec;
 
 @Log4j2
 public class SectorServer extends CellServer {
@@ -37,9 +31,9 @@ public class SectorServer extends CellServer {
             }
         }).toArray(CellHandler[]::new));
 
-        log.info("Connecting to Cell: {}", cell);
+        log.info("Connect to Cell: {}", cell);
         server.bindClient(cell);
-        log.info("Creating a server socket: {}", localAddress);
+        log.info("Creat a server socket: {}", localAddress);
         server.bindServer(localAddress);
 
         server.remoteAddr = cell;

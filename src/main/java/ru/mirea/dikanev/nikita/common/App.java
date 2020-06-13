@@ -34,7 +34,7 @@ public class App {
     public static final int uPort = 18000;
 
     public static void main(String[] args) throws IOException, InterruptedException, AuthenticationException {
-        System.out.println("Main is starting!");
+        System.out.println("Main is being started!");
 
         CellManagerApp.startServer(uHost, uPort, cmHost, cmPort);
 
