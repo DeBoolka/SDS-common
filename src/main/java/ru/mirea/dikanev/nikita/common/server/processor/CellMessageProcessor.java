@@ -267,6 +267,8 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
         log.info("Sector addr was added for {}: {}", message.getFrom(), addr);
 
         getRectangle(handler, message);
+
+        mapView.setNumberOfSectors(handler.getSectors().size());
     }
 
     protected void getSectorAddr(CellHandler handler, Message message) {
@@ -328,7 +330,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
 
         handler.getSectors().forEach(sector -> handler.sendMessage(sector.getChannel(), message));
         if (getClass() == CellMessageProcessor.class) {
-            mapView = new MapView(cellRectangle.upperLeftCorner.x, cellRectangle.bottomRightCorner.y);
+            mapView = new MapView(this, cellRectangle.upperLeftCorner.x, cellRectangle.bottomRightCorner.y);
             mapView.setTitle(String.format("[%d, %d] [%d, %d]", cellRectangle.upperLeftCorner.x, cellRectangle.upperLeftCorner.y,
                     cellRectangle.bottomRightCorner.x, cellRectangle.bottomRightCorner.y));
         }
@@ -379,7 +381,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
         }
     }
 
-    protected void balanceAction(CellHandler handler, Message message) {
+    public Balancer balanceAction(CellHandler handler, Message message) {
         List<VoronoiPoint> points = playerService.getMap()
                 .entrySet()
                 .stream()
@@ -403,6 +405,8 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                                             addresses.get(i).getHostName().getBytes(),
                                             addresses.get(i).getPort())));
                 })));
+
+        return balancer;
     }
 
     private void subscribeToPosition(CellHandler handler, Message message) {
