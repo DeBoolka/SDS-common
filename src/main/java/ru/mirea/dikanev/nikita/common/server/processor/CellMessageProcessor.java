@@ -13,6 +13,7 @@ import java.util.stream.IntStream;
 
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
+import ru.mirea.dikanev.nikita.common.MapView;
 import ru.mirea.dikanev.nikita.common.balance.Balancer;
 import ru.mirea.dikanev.nikita.common.balance.voronoi.graph.VoronoiPoint;
 import ru.mirea.dikanev.nikita.common.math.Point;
@@ -67,6 +68,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
     protected Map<Integer, ChannelConnector> cellSubscribes = new ConcurrentHashMap<>();
     protected Map<Integer, ChannelConnector> worldSubscribes = new ConcurrentHashMap<>();
 
+    protected MapView mapView;
     private  static Object lock = new Object();
 
     public CellMessageProcessor(CellServer server, int nThreads) {
@@ -228,11 +230,14 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                             PositionCodec.newPositionPack(posPackage.userId, position.x, position.y)));
 
             if (cellRectangle.isIntersectionBufferZone(BUFFER_ZONE_NEAR_BORDERS, position)) {
+                mapView.removePlayer(posPackage.userId);
                 reconnectService.push(posPackage.userId, client);
                 handler.sendMessage(handler.getRootConnector().getChannel(),
                         Message.create(null,
                                 GET_SECTOR_ADDRESS_ACTION,
                                 PositionCodec.newPositionPack(posPackage.userId, position.x, position.y)));
+            } else {
+                mapView.movePlayer(posPackage.userId, position.x, position.y);
             }
 
             cellSubscribes.forEach((id, connector) -> {
@@ -293,6 +298,10 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                 Message.create(null,
                         Codes.SET_CLIENT,
                         PositionCodec.newPositionPack(posPack.userId, posPack.x, posPack.y)));
+
+        if (getClass() == CellMessageProcessor.class) {
+            mapView.movePlayer(posPack.userId, posPack.x, posPack.y);
+        }
     }
 
     protected void setRectangle(CellHandler handler, Message message) {
@@ -318,6 +327,11 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
         handler.setRectangle(this.cellRectangle);
 
         handler.getSectors().forEach(sector -> handler.sendMessage(sector.getChannel(), message));
+        if (getClass() == CellMessageProcessor.class) {
+            mapView = new MapView(cellRectangle.upperLeftCorner.x, cellRectangle.bottomRightCorner.y);
+            mapView.setTitle(String.format("[%d, %d] [%d, %d]", cellRectangle.upperLeftCorner.x, cellRectangle.upperLeftCorner.y,
+                    cellRectangle.bottomRightCorner.x, cellRectangle.bottomRightCorner.y));
+        }
     }
 
     protected void getRectangle(CellHandler handler, Message message) {
@@ -345,6 +359,10 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
 
         oldPosition.x = position.x;
         oldPosition.y = position.y;
+
+        if (getClass() == CellMessageProcessor.class) {
+            mapView.movePlayer(posPack.userId, posPack.x, posPack.y);
+        }
     }
 
     private void setClient(CellHandler handler, Message message) {
@@ -355,6 +373,10 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
 
         Client client = clientService.getClient(posPack.userId).orElse(new AuthenticationClient(posPack.userId));
         clientService.newSession(client, new Point(posPack.x, posPack.y));
+
+        if (getClass() == CellMessageProcessor.class) {
+            mapView.movePlayer(posPack.userId, posPack.x, posPack.y);
+        }
     }
 
     protected void balanceAction(CellHandler handler, Message message) {

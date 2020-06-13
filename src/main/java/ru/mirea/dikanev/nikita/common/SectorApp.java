@@ -13,10 +13,10 @@ public class SectorApp {
         System.out.println("Server is being started!");
 
         String cHost = args.length > 0 ? args[0] : "localhost";
-        int cPort = args.length > 1 ? Integer.parseInt(args[1]) : 12000;
+        int cPort = args.length > 1 ? Integer.parseInt(args[1]) : 12003;
 
         String sHost = args.length > 2 ? args[2] : "localhost";
-        int sPort = args.length > 3 ? Integer.parseInt(args[3]) : 13009;
+        int sPort = args.length > 3 ? Integer.parseInt(args[3]) : 13000;
 
         startServer(cHost, cPort, sHost, sPort);
     }

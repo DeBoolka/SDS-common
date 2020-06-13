@@ -15,7 +15,7 @@ public class CellApp {
         int cmPort = args.length > 1 ? Integer.parseInt(args[1]) : 11000;
 
         String cHost = args.length > 2 ? args[2] : "localhost";
-        int cPort = args.length > 3 ? Integer.parseInt(args[3]) : 12000;
+        int cPort = args.length > 3 ? Integer.parseInt(args[3]) : 12003;
 
         startServer(cmHost, cmPort, cHost, cPort);
     }

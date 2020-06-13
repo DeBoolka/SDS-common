@@ -25,7 +25,7 @@ public class App {
     public static final int cmPort = 11000;
 
     public static final String cHost = LOCAL_HOST;
-    public static final int cPort = 12000;
+    public static final int cPort = 16000;
 
     public static final String sHost = LOCAL_HOST;
     public static final int sPort = 13000;
