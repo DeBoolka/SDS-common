@@ -23,16 +23,19 @@ import ru.mirea.dikanev.nikita.common.server.protocol.pack.MessagePackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.MetricPackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.PositionPackage;
 import ru.mirea.dikanev.nikita.common.server.protocol.pack.ReconnectPackage;
+import ru.mirea.dikanev.nikita.common.server.receiver.ByteBuilder;
 
 @Log4j2
 public class TestClient {
 
-    public static final String DEFAULT_HOST = "127.0.0.1";
-    public static final int PORT = 18000;
+    public static final String DEFAULT_HOST = "192.168.2.35";
+    public static final int PORT = 12000;
+    public static final int BUFFER_SIZE = 8192;
 
     private Selector selector;
     private SocketChannel channel;
-    private ByteBuffer buffer = ByteBuffer.allocate(8192);
+    private ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+    private ByteBuilder byteBuilder = null;
 
     private MetricCodec metricCodec = new MetricCodec();
 
@@ -124,9 +127,32 @@ public class TestClient {
 
                     buffer.rewind();
                     byte[] gottenData = buffer.array();
+                    if (byteBuilder != null) {
+                        int missedData = byteBuilder.len() - byteBuilder.getData()[0].length;
+                        byte[] arr = new byte[missedData];
+                        System.arraycopy(gottenData, 0, arr, 0, missedData);
+                        byteBuilder.put(arr);
+                        buffer.position(missedData + buffer.position());
+
+                        MetricPackage metricPackage = metricCodec.decode(ByteBuffer.wrap(byteBuilder.build()));
+                        log.info("{}", metricPackage);
+                        byteBuilder = null;
+                    }
+
                     while (buffer.position() < numRead) {
                         int len = buffer.getInt();
+                        if (len + buffer.position() >= numRead) {
+                            int missedData = len + buffer.position() - numRead;
+                            byte[] messageCopy = new byte[len - missedData];
+                            System.arraycopy(gottenData, buffer.position(), messageCopy, 0, len - missedData);
+                            byteBuilder = new ByteBuilder(2);
+                            byteBuilder.put(messageCopy);
+                            byteBuilder.setLen(len);
+                            break;
+                        }
+
                         byte[] messageCopy = new byte[len];
+
                         System.arraycopy(gottenData, buffer.position(), messageCopy, 0, len);
                         buffer.position(len + buffer.position());
 

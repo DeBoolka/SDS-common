@@ -11,7 +11,7 @@ version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
-mainClassName = 'ru.mirea.dikanev.nikita.common.SectorApp'
+mainClassName = 'ru.mirea.dikanev.nikita.common.TestClient'
 
 repositories {
     mavenCentral()

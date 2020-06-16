@@ -25,7 +25,7 @@ public class App {
     public static final int cmPort = 11000;
 
     public static final String cHost = LOCAL_HOST;
-    public static final int cPort = 16000;
+    public static final int cPort = 12000;
 
     public static final String sHost = LOCAL_HOST;
     public static final int sPort = 13000;
@@ -41,8 +41,11 @@ public class App {
         Thread.sleep(2000);
 
         CellApp.startServer(cmHost, cmPort, cHost, cPort);
+        Thread.sleep(200);
         CellApp.startServer(cmHost, cmPort, cHost, cPort + 1);
+        Thread.sleep(200);
         CellApp.startServer(cmHost, cmPort, cHost, cPort + 2);
+        Thread.sleep(200);
         CellApp.startServer(cmHost, cmPort, cHost, cPort + 3);
 
         Thread.sleep(5000);

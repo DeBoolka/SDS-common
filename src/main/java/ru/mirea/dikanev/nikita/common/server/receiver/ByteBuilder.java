@@ -4,6 +4,7 @@ public class ByteBuilder {
 
     private byte[][] data;
     private short dataCounter = 0;
+    private int len = 0;
 
     public ByteBuilder() {
         this(1);
@@ -11,6 +12,14 @@ public class ByteBuilder {
 
     public ByteBuilder(int capacity) {
         data = new byte[capacity][];
+    }
+
+    public int len() {
+        return len;
+    }
+
+    public void setLen(int len) {
+        this.len = len;
     }
 
     public int position() {
