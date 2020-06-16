@@ -85,7 +85,7 @@ public  class ClientDatagramChannelConnector implements ChannelConnector {
             try {
                 return connect(selector, handler, readBuffer);
             } catch (Exception e) {
-                //log.error("Failed to connect: ", e);
+                log.error("Failed to connect: ", e);
                 return -1;
             }
         }

@@ -26,7 +26,7 @@ public class SlaveRemoteMessageServer extends SimpleMessageHandler {
             bind(new SocketChannelConnector(masterAddress));
             bind(new ServerSocketChannelConnector(slaveAddress));
         } catch (Exception e) {
-            //log.error("Failed to create slave socket", e);
+            log.error("Failed to create slave socket", e);
             Thread.currentThread().interrupt();
         }
     }

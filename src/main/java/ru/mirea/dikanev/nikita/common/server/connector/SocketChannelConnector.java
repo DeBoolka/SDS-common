@@ -119,7 +119,7 @@ public class SocketChannelConnector implements ChannelConnector {
         try {
             return (InetSocketAddress) channel.getLocalAddress();
         } catch (IOException e) {
-            //log.error(e);
+            log.error(e);
         }
         return null;
     }
@@ -129,7 +129,7 @@ public class SocketChannelConnector implements ChannelConnector {
         try {
             return (InetSocketAddress) channel.getRemoteAddress();
         } catch (IOException e) {
-            //log.error(e);
+            log.error(e);
         }
         return null;
     }

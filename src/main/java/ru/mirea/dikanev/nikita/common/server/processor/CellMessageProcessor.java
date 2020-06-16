@@ -86,7 +86,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                 int actionCode = message.getAction();
                 action((CellHandler) handler, actionCode, message);
             } catch (Exception e) {
-                //log.error("Process has failed", e);
+                log.error("Process has failed", e);
             }
         });
     }

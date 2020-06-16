@@ -71,7 +71,7 @@ public class CellManagerMessageProcessor implements MessageProcessor {
                 }
                 server.getMessageHandlers().forEach(h -> h.sendMessage(message));
             } catch (Exception e) {
-                //log.error("Process has failed", e);
+                log.error("Process has failed", e);
             }
         });
     }

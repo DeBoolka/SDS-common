@@ -49,7 +49,7 @@ public class SimpleConnectorService implements ConnectorService {
             key.cancel();
             channel.close();
         } catch (IOException e) {
-            //log.error("Failed to close the channel: ", e);
+            log.error("Failed to close the channel: ", e);
         }
     }
 

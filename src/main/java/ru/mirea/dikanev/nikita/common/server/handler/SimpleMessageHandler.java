@@ -119,7 +119,7 @@ public class SimpleMessageHandler implements MessageHandler {
                 }
             }
         } catch (Exception e) {
-            //log.error("Message handler error: ", e);
+            log.error("Message handler error: ", e);
         } finally {
             isRunning = false;
             receiver.clear();
@@ -148,7 +148,7 @@ public class SimpleMessageHandler implements MessageHandler {
             try {
                 callBack.callback(this);
             } catch (Exception e) {
-                //log.warn("Callback failed", e);
+                log.warn("Callback failed", e);
             }
         });
         finishCallBacks.clear();
@@ -193,7 +193,7 @@ public class SimpleMessageHandler implements MessageHandler {
                     sender.writeToChannel(key, connector);
                 }
             } catch (Exception e) {
-                //log.error("Event error:", e);
+                log.error("Event error:", e);
             }
         }
 

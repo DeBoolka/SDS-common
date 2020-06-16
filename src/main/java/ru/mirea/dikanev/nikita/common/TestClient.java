@@ -162,7 +162,7 @@ public class TestClient {
 
                 } else if (sKey.isWritable()) {
                     if (queue.size() == 0) {
-                        sKey.interestOps(SelectionKey.OP_READ);
+//                        sKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
                         continue;
                     }
 
@@ -177,9 +177,15 @@ public class TestClient {
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        TestClient client = new TestClient();
-        client.init();
+    public static void main(String[] args)  {
+        try {
+            TestClient client = new TestClient();
+            client.init();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            System.out.println("Error");
+        }
     }
 
 }

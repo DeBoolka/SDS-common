@@ -127,7 +127,7 @@ public class CellManagerHandler extends SimpleMessageHandler {
         try {
             return rectangles.stream().filter(r -> r.contains(x, y)).findFirst().map(r -> cells.get(r)).get();
         } catch (Exception e) {
-            //log.error("Rectangle was not found: x = {}, y = {}", x, y);
+            log.error("Rectangle was not found: x = {}, y = {}", x, y);
             throw e;
         }
     }

@@ -37,7 +37,7 @@ public class SimpleMessageReceiver implements MessageReceiver {
         try {
             numRead = connector.onRead(key.selector(), handler, readBuffer);
         } catch (IOException e) {
-            //log.error("Failed to read from the channel: ", e);
+            log.error("Failed to read from the channel: ", e);
             service.closeConnection(key, connector);
             return;
         }
