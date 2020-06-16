@@ -85,7 +85,7 @@ public  class ClientDatagramChannelConnector implements ChannelConnector {
             try {
                 return connect(selector, handler, readBuffer);
             } catch (Exception e) {
-                log.error("Failed to connect: ", e);
+                //log.error("Failed to connect: ", e);
                 return -1;
             }
         }
@@ -115,7 +115,7 @@ public  class ClientDatagramChannelConnector implements ChannelConnector {
             remoteAddress = (InetSocketAddress) channel.receive(readBuffer);
             channel.connect(remoteAddress);
             status = READY;
-            log.info("Connect: {} >> {}", channel.getLocalAddress(), channel.getRemoteAddress());
+            //log.info("Connect: {} >> {}", channel.getLocalAddress(), channel.getRemoteAddress());
         }
 
         return -2;

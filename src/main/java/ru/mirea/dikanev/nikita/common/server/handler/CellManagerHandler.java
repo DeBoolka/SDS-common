@@ -40,8 +40,8 @@ public class CellManagerHandler extends SimpleMessageHandler {
                 new Rectangle(0, HEIGHT_WOLD, WIDTH_WOLD / 2, HEIGHT_WOLD / 2),
                 new Rectangle(WIDTH_WOLD / 2, HEIGHT_WOLD, WIDTH_WOLD, HEIGHT_WOLD / 2));
 
-        log.info("A game map was created. Map size: {}x{}", WIDTH_WOLD, HEIGHT_WOLD);
-        log.info("The game map was split up into {} rectangles. Rectangles: {}", rectangles.size(), rectangles);
+        //log.info("A game map was created. Map size: {}x{}", WIDTH_WOLD, HEIGHT_WOLD);
+        //log.info("The game map was split up into {} rectangles. Rectangles: {}", rectangles.size(), rectangles);
     }
 
     @Override
@@ -127,7 +127,7 @@ public class CellManagerHandler extends SimpleMessageHandler {
         try {
             return rectangles.stream().filter(r -> r.contains(x, y)).findFirst().map(r -> cells.get(r)).get();
         } catch (Exception e) {
-            log.error("Rectangle was not found: x = {}, y = {}", x, y);
+            //log.error("Rectangle was not found: x = {}, y = {}", x, y);
             throw e;
         }
     }

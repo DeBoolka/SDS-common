@@ -48,7 +48,7 @@ public class SimpleMessageProcessor implements MessageProcessor {
 
                 server.getMessageHandlers().forEach(h -> h.sendMessage(Message.send(message.getFrom(), pack)));
             } catch (Exception e) {
-                log.error("Process has failed", e);
+                //log.error("Process has failed", e);
             }
         });
     }

@@ -64,7 +64,7 @@ public class Client {
         System.out.println("port: ");
         String port = scanner.nextLine();
         if (port.isBlank() || port.equals("0") || port.equals("-")) {
-            log.warn("[WARNING] Default port");
+            //log.warn("[WARNING] Default port");
             port = String.valueOf(PORT);
         }
         for (char ch : port.toCharArray()) {
@@ -81,7 +81,7 @@ public class Client {
             while (true) {
                 String line = scanner.nextLine();
                 if ("q".equals(line)) {
-                    log.info("Exit!");
+                    //log.info("Exit!");
                     System.exit(0);
                 }
 
@@ -124,7 +124,7 @@ public class Client {
 
                 // Будим селектор
                 SelectionKey key = channel.keyFor(selector);
-                log.info("wake up: {}", key.hashCode());
+                //log.info("wake up: {}", key.hashCode());
                 key.interestOps(SelectionKey.OP_WRITE);
                 selector.wakeup();
             }
@@ -148,21 +148,21 @@ public class Client {
                 keyIterator.remove();
 
                 if (sKey.isConnectable()) {
-                    log.info("[connectable] {}", sKey.hashCode());
+                    //log.info("[connectable] {}", sKey.hashCode());
 
                     channel.finishConnect();
 
                     // теперь в канал можно писать
                     sKey.interestOps(SelectionKey.OP_WRITE);
                 } else if (sKey.isReadable()) {
-                    log.info("[readable]");
+                    //log.info("[readable]");
 
                     buffer.clear();
                     int numRead = channel.read(buffer);
                     if (numRead < 0) {
                         break;
                     }
-                    log.info("New message from server");
+                    //log.info("New message from server");
 
                     buffer.rewind();
                     byte[] gottenData = buffer.array();
@@ -176,7 +176,7 @@ public class Client {
                     }
 
                 } else if (sKey.isWritable()) {
-                    log.info("[writable]");
+                    //log.info("[writable]");
 
                     //TODO: здесь нужно вытащить данные из очереди и отдать их на сервер
 

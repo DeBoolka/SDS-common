@@ -63,7 +63,7 @@ public class ServerSocketChannelConnector implements ChannelConnector {
         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) getChannel();
 
         SocketChannel newChannel = serverSocketChannel.accept();
-        log.info("New channel between {} and {}", newChannel.getLocalAddress(), newChannel.getRemoteAddress());
+        //log.info("New channel between {} and {}", newChannel.getLocalAddress(), newChannel.getRemoteAddress());
 //        System.out.println(String.format("A: %s -- %s", newChannel.getLocalAddress(), newChannel.getRemoteAddress()));
         return new SocketChannelConnector(newChannel);
     }

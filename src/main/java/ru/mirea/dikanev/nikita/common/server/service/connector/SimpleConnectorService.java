@@ -49,13 +49,13 @@ public class SimpleConnectorService implements ConnectorService {
             key.cancel();
             channel.close();
         } catch (IOException e) {
-            log.error("Failed to close the channel: ", e);
+            //log.error("Failed to close the channel: ", e);
         }
     }
 
     @Override
     public void bind(ChannelConnector connector) throws IOException, AuthenticationException {
-        log.info("New client");
+        //log.info("New client");
         Optional<Client> client = connector.getClient();
         connector.setClient(clientService.login(connector, client.orElse(null)));
 

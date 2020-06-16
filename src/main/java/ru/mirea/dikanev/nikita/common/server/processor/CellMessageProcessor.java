@@ -86,7 +86,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                 int actionCode = message.getAction();
                 action((CellHandler) handler, actionCode, message);
             } catch (Exception e) {
-                log.error("Process has failed", e);
+                //log.error("Process has failed", e);
             }
         });
     }
@@ -139,7 +139,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
                 subscribedPosition(handler, message);
                 return;
             default:
-                log.warn("Unknown action code: {}", actionCode);
+                //log.warn("Unknown action code: {}", actionCode);
         }
     }
 
@@ -215,12 +215,12 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
             Point position = playerService.getMap()
                     .computeIfAbsent(posPackage.userId, k -> new PlayerState(new Point(0, 0))).position;
 
-            log.info("User {} moved to [{}, {}] from [{}, {}]",
-                    posPackage.userId,
-                    position.x + moveVector.x,
-                    position.y + moveVector.y,
-                    position.x,
-                    position.y);
+            //log.info("User {} moved to [{}, {}] from [{}, {}]",
+//                    posPackage.userId,
+//                    position.x + moveVector.x,
+//                    position.y + moveVector.y,
+//                    position.x,
+//                    position.y);
             position.x += moveVector.x;
             position.y += moveVector.y;
 
@@ -264,7 +264,7 @@ public class CellMessageProcessor implements MessageProcessor, Codes {
 
         InetSocketAddress addr = new InetSocketAddress(new String(addrPack.host), addrPack.port);
         handler.setSector(message.getFrom(), addr);
-        log.info("Sector addr was added for {}: {}", message.getFrom(), addr);
+        //log.info("Sector addr was added for {}: {}", message.getFrom(), addr);
 
         getRectangle(handler, message);
 

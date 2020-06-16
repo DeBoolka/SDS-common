@@ -71,7 +71,7 @@ public class CellManagerMessageProcessor implements MessageProcessor {
                 }
                 server.getMessageHandlers().forEach(h -> h.sendMessage(message));
             } catch (Exception e) {
-                log.error("Process has failed", e);
+                //log.error("Process has failed", e);
             }
         });
     }
@@ -89,7 +89,7 @@ public class CellManagerMessageProcessor implements MessageProcessor {
         AddressPackage addrPack = addressCodec.decode(message.payload());
         InetSocketAddress addr = new InetSocketAddress(new String(addrPack.host), addrPack.port);
         handler.setAddrCell(message.getFrom(), addr);
-        log.info("Cell addr was added for {}: {}", message.getFrom(), addr);
+        //log.info("Cell addr was added for {}: {}", message.getFrom(), addr);
 
         getRectangle(handler, message);
     }

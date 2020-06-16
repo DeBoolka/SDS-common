@@ -22,7 +22,7 @@ public class MasterRemoteMessageHandler extends SimpleMessageHandler {
         try {
             bind(new ServerSocketChannelConnector(address));
         } catch (Exception e) {
-            log.error("Failed to create master socket", e);
+            //log.error("Failed to create master socket", e);
             Thread.currentThread().interrupt();
         }
     }

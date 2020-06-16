@@ -79,7 +79,7 @@ public class CellHandler extends SimpleMessageHandler {
     }
 
     public void setRectangle(Rectangle rectangle) {
-        log.info("Set rectangle: {}", rectangle);
+        //log.info("Set rectangle: {}", rectangle);
         this.rectangle = rectangle;
     }
 

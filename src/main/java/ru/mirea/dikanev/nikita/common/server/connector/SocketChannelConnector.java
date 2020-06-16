@@ -58,7 +58,7 @@ public class SocketChannelConnector implements ChannelConnector {
         channel = SocketChannel.open();
         channel.connect(address);
         channel.finishConnect();
-        log.info("New channel for {}", channel.getLocalAddress());
+        //log.info("New channel for {}", channel.getLocalAddress());
 //        System.out.println(String.format("New: %s", channel.getLocalAddress()));
         operation = SelectionKey.OP_CONNECT | SelectionKey.OP_READ;
     }
@@ -71,7 +71,7 @@ public class SocketChannelConnector implements ChannelConnector {
     @Override
     public void onConnect(Selector selector, MessageHandler handler) throws IOException {
         channel.finishConnect();
-        log.info("New connection between {} and {}", channel.getLocalAddress(), channel.getRemoteAddress());
+        //log.info("New connection between {} and {}", channel.getLocalAddress(), channel.getRemoteAddress());
         System.out.println(String.format("C: %s -- %s", channel.getLocalAddress(), channel.getRemoteAddress()));
     }
 
@@ -84,7 +84,7 @@ public class SocketChannelConnector implements ChannelConnector {
     @Override
     public int onWrite(Selector selector, MessageHandler handler, ByteBuffer writeBuffer) throws IOException {
 //        System.out.println(String.format("W: %s >> %s", channel.getLocalAddress(), channel.getRemoteAddress()));
-        log.info("Write from {} to {}", channel.getLocalAddress(), channel.getRemoteAddress());
+        //log.info("Write from {} to {}", channel.getLocalAddress(), channel.getRemoteAddress());
         return channel.write(writeBuffer);
     }
 
@@ -119,7 +119,7 @@ public class SocketChannelConnector implements ChannelConnector {
         try {
             return (InetSocketAddress) channel.getLocalAddress();
         } catch (IOException e) {
-            log.error(e);
+            //log.error(e);
         }
         return null;
     }
@@ -129,7 +129,7 @@ public class SocketChannelConnector implements ChannelConnector {
         try {
             return (InetSocketAddress) channel.getRemoteAddress();
         } catch (IOException e) {
-            log.error(e);
+            //log.error(e);
         }
         return null;
     }

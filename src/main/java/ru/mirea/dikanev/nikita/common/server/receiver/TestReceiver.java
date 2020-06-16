@@ -4,15 +4,14 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 
-import lombok.extern.log4j.Log4j2;
 import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
+import ru.mirea.dikanev.nikita.common.server.handler.SimpleMessageHandler;
 import ru.mirea.dikanev.nikita.common.server.processor.MessageProcessor;
 import ru.mirea.dikanev.nikita.common.server.service.connector.ConnectorService;
 
-@Log4j2
-public class SimpleMessageReceiver implements MessageReceiver {
+public class TestReceiver implements MessageReceiver {
 
     private static final int BUFFER_SIZE = 8192;
 
@@ -20,10 +19,10 @@ public class SimpleMessageReceiver implements MessageReceiver {
     private ConnectorService service;
     private MessageProcessor processor;
 
-//    private Map<SelectableChannel, ByteBuilder> incompleteMessages;
-    private ByteBuffer readBuffer = ByteBuffer.allocate(BUFFER_SIZE);
+    //    private Map<SelectableChannel, ByteBuilder> incompleteMessages;
+    private final ByteBuffer readBuffer = ByteBuffer.allocate(BUFFER_SIZE);
 
-    public SimpleMessageReceiver(MessageHandler handler, ConnectorService service, MessageProcessor processor) {
+    public TestReceiver(SimpleMessageHandler handler, ConnectorService service, MessageProcessor processor) {
         this.handler = handler;
         this.service = service;
         this.processor = processor;
@@ -37,13 +36,11 @@ public class SimpleMessageReceiver implements MessageReceiver {
         try {
             numRead = connector.onRead(key.selector(), handler, readBuffer);
         } catch (IOException e) {
-            //log.error("Failed to read from the channel: ", e);
             service.closeConnection(key, connector);
             return;
         }
 
         if (numRead == -1) {
-            //log.info("Client is disconnected");
             service.closeConnection(key, connector);
             return;
         } else if (numRead == -2) {
@@ -57,10 +54,9 @@ public class SimpleMessageReceiver implements MessageReceiver {
             int len = readBuffer.getInt();
             byte[] messageCopy = new byte[len];
             System.arraycopy(gottenData, readBuffer.position(), messageCopy, 0, len);
-            Message message = Message.createWithAction(connector, ByteBuffer.wrap(messageCopy));
+            Message message = new Message(connector, -1, ByteBuffer.allocate(Integer.BYTES * 3));
             readBuffer.position(len + readBuffer.position());
 
-            //log.info("[New package was read] - Len: {} | Action: {}", len, message.getAction());
             processor.process(handler, message);
         }
 

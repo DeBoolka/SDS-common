@@ -119,7 +119,7 @@ public class SimpleMessageHandler implements MessageHandler {
                 }
             }
         } catch (Exception e) {
-            log.error("Message handler error: ", e);
+            //log.error("Message handler error: ", e);
         } finally {
             isRunning = false;
             receiver.clear();
@@ -128,7 +128,7 @@ public class SimpleMessageHandler implements MessageHandler {
             service.clear();
         }
 
-        log.info("Message handler has stopped");
+        //log.info("Message handler has stopped");
     }
 
     public void addFinishCallback(CallBack callBack) {
@@ -148,7 +148,7 @@ public class SimpleMessageHandler implements MessageHandler {
             try {
                 callBack.callback(this);
             } catch (Exception e) {
-                log.warn("Callback failed", e);
+                //log.warn("Callback failed", e);
             }
         });
         finishCallBacks.clear();
@@ -180,20 +180,20 @@ public class SimpleMessageHandler implements MessageHandler {
                 if (!key.isValid()) {
                     service.closeConnection(key, connector);
                 } else if (key.isAcceptable()) {
-                    log.info("[Accept]");
+                    //log.info("[Accept]");
                     service.accept(key, connector);;
                 } else if (key.isConnectable()) {
-                    log.info("[Connect]");
+                    //log.info("[Connect]");
                     service.connect(key, connector);
                 } else if (key.isReadable()) {
-                    log.info("[Read]");
+                    //log.info("[Read]");
                     receiver.receive(key, connector);
                 } else if (key.isWritable()) {
-                    log.info("[Write]");
+                    //log.info("[Write]");
                     sender.writeToChannel(key, connector);
                 }
             } catch (Exception e) {
-                log.error("Event error:", e);
+                //log.error("Event error:", e);
             }
         }
 

@@ -31,9 +31,9 @@ public class SectorServer extends CellServer {
             }
         }).toArray(CellHandler[]::new));
 
-        log.info("Connect to Cell: {}", cell);
+        //log.info("Connect to Cell: {}", cell);
         server.bindClient(cell);
-        log.info("Creat a server socket: {}", localAddress);
+        //log.info("Creat a server socket: {}", localAddress);
         server.bindServer(localAddress);
 
         server.remoteAddr = cell;

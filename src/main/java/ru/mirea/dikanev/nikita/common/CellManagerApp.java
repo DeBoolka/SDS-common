@@ -31,8 +31,8 @@ public class CellManagerApp {
         master.bind(new ServerSocketChannelConnector(new InetSocketAddress(uHost, uPort)));
         master.bindCellAccepter(new ServerSocketChannelConnector(new InetSocketAddress(cmHost, cmPort)));
 
-        log.info("User host: {}:{}", uHost, uPort);
-        log.info("Cell host: {}:{}", cmHost, cmPort);
+        //log.info("User host: {}:{}", uHost, uPort);
+        //log.info("Cell host: {}:{}", cmHost, cmPort);
     }
 
 }

@@ -50,29 +50,29 @@ public class SimpleMessageServer implements MessageServer {
         try {
             handler.bind(connector);
         } catch (AuthenticationException e) {
-            log.warn(e);
+            //log.warn(e);
         }
 
         return handler;
     }
 
     public void start() {
-        log.info("Server is being started...");
-        log.info("Number of handlers: {}", handlers.size());
+        //log.info("Server is being started...");
+        //log.info("Number of handlers: {}", handlers.size());
         handlersExecutor = Executors.newFixedThreadPool(handlers.size());
         handlers.forEach(handler -> handlersExecutor.submit(handler));
 
-        log.info("Server has been started");
+        //log.info("Server has been started");
     }
 
     public void stop() throws InterruptedException {
-        log.info("Server is being stopped...");
+        //log.info("Server is being stopped...");
 
-        log.info("Handlers are being shutdowned");
+        //log.info("Handlers are being shutdowned");
         handlersExecutor.shutdownNow();
         handlersExecutor.awaitTermination(5, TimeUnit.SECONDS);
 
-        log.info("Server has been stopped");
+        //log.info("Server has been stopped");
     }
 
     public void send(Message message) {
