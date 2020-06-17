@@ -1,27 +1,11 @@
 package ru.mirea.dikanev.nikita.common.server.processor;
 
-import java.net.InetSocketAddress;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import lombok.extern.log4j.Log4j2;
-import ru.mirea.dikanev.nikita.common.math.Rectangle;
-import ru.mirea.dikanev.nikita.common.server.CellManagerServer;
-import ru.mirea.dikanev.nikita.common.server.connector.ChannelConnector;
 import ru.mirea.dikanev.nikita.common.server.entity.Message;
-import ru.mirea.dikanev.nikita.common.server.handler.CellManagerHandler;
 import ru.mirea.dikanev.nikita.common.server.handler.MessageHandler;
-import ru.mirea.dikanev.nikita.common.server.protocol.codec.AddressCodec;
-import ru.mirea.dikanev.nikita.common.server.protocol.codec.MessageCodec;
-import ru.mirea.dikanev.nikita.common.server.protocol.codec.PositionCodec;
-import ru.mirea.dikanev.nikita.common.server.protocol.codec.ReconnectCodec;
-import ru.mirea.dikanev.nikita.common.server.protocol.pack.AddressPackage;
-import ru.mirea.dikanev.nikita.common.server.protocol.pack.MessagePackage;
-import ru.mirea.dikanev.nikita.common.server.protocol.pack.PositionPackage;
-import ru.mirea.dikanev.nikita.common.server.protocol.pack.ReconnectPackage;
 
 @Log4j2
 public class TestMessageProcessor implements MessageProcessor {
@@ -36,9 +20,27 @@ public class TestMessageProcessor implements MessageProcessor {
     public void process(MessageHandler handler, Message message) {
         message.getData().putInt((int) (System.currentTimeMillis() % 10000000));
         messageTasks.submit(() -> {
-            message.getData().putInt((int) (System.currentTimeMillis() % 10000000));
+            long time = System.currentTimeMillis() % 10000000;
+            message.getData().putInt((int) (time));
+
+            if (TestMessageProcessor.findSimpleNum(1000)) {
+                return;
+            }
+
+//            System.out.println("SEND");
             handler.sendMessage(message.getFrom().getChannel(), message);
         });
+    }
+
+    public static boolean findSimpleNum(int num) {
+        double sqrt = Math.sqrt(num);
+        for (double i = 1; i < sqrt * sqrt; i++) {
+            double prime = Math.sqrt(i)*sqrt;
+            for (int j = 0; j < 10; j++) {
+                i = i + (prime * i % 10 - prime / 2 * 2 * i % 10);
+            }
+        }
+        return false;
     }
 
     @Override

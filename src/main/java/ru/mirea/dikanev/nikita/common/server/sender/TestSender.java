@@ -93,7 +93,7 @@ public class TestSender implements MessageSender {
         }
 
         pendingMessages.add(message);
-        service.changeOps(channel, ChangeOpsRequest.OP_READ_WRITE);
+        service.changeOps(channel, ChangeOpsRequest.OP_WRITE);
     }
 
     @Override

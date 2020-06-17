@@ -11,6 +11,7 @@ public class ChangeOpsRequest {
     public static final int CHANGE_OPS = 1;
 
     public static final int OP_READ_WRITE = SelectionKey.OP_READ | SelectionKey.OP_WRITE;
+    public static final int OP_WRITE = SelectionKey.OP_WRITE;
 
     public SelectableChannel channel;
     public int type;

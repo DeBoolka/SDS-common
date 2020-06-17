@@ -180,16 +180,16 @@ public class SimpleMessageHandler implements MessageHandler {
                 if (!key.isValid()) {
                     service.closeConnection(key, connector);
                 } else if (key.isAcceptable()) {
-                    //log.info("[Accept]");
+//                    log.info("[Accept]");
                     service.accept(key, connector);;
                 } else if (key.isConnectable()) {
                     //log.info("[Connect]");
                     service.connect(key, connector);
                 } else if (key.isReadable()) {
-                    //log.info("[Read]");
+//                    log.info("[Read]");
                     receiver.receive(key, connector);
                 } else if (key.isWritable()) {
-                    //log.info("[Write]");
+//                    log.info("[Write]");
                     sender.writeToChannel(key, connector);
                 }
             } catch (Exception e) {

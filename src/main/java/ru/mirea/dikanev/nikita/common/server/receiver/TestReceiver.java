@@ -52,10 +52,11 @@ public class TestReceiver implements MessageReceiver {
         byte[] gottenData = readBuffer.array();
         while (readBuffer.position() < numRead) {
             int len = readBuffer.getInt();
-            byte[] messageCopy = new byte[len];
-            System.arraycopy(gottenData, readBuffer.position(), messageCopy, 0, len);
-            Message message = new Message(connector, -1, ByteBuffer.allocate(Integer.BYTES * 3));
-            readBuffer.position(len + readBuffer.position());
+
+            byte[] messageCopy = new byte[Integer.BYTES * 3];
+            System.arraycopy(gottenData, 0, messageCopy, 0, Math.min(gottenData.length, Integer.BYTES * 3));
+            Message message = new Message(connector, -1, ByteBuffer.wrap(messageCopy));
+            readBuffer.position(Math.min(len + readBuffer.position(), BUFFER_SIZE));
 
             processor.process(handler, message);
         }
