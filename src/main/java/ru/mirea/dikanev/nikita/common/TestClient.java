@@ -39,6 +39,11 @@ public class TestClient {
 
     private MetricCodec metricCodec = new MetricCodec();
 
+    private int maxRequestAtSecond = 0;
+    private int maxRequestStep = 200;
+    private int requestCounter = 0;
+    private long requestTime = 0;
+
     volatile BlockingQueue<byte[]> queue = new ArrayBlockingQueue<>(10);
 
     int id = -1;
@@ -104,75 +109,92 @@ public class TestClient {
         channel.connect(new InetSocketAddress(host, Integer.parseInt(port)));
 
         while (true) {
-            int num = selector.select();
+            try {
+                int num = selector.select();
 
-            Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
-            while (keyIterator.hasNext()) {
-                SelectionKey sKey = keyIterator.next();
-                keyIterator.remove();
+                Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
+                while (keyIterator.hasNext()) {
+                    SelectionKey sKey = keyIterator.next();
+                    keyIterator.remove();
 
-                if (sKey.isConnectable()) {
-                    //log.info("[connectable] {}", sKey.hashCode());
+                    if (sKey.isConnectable()) {
+                        //log.info("[connectable] {}", sKey.hashCode());
 
-                    channel.finishConnect();
+                        channel.finishConnect();
 
-                    // теперь в канал можно писать
-                    sKey.interestOps(SelectionKey.OP_WRITE);
-                } else if (sKey.isReadable()) {
-                    buffer.clear();
-                    int numRead = channel.read(buffer);
-                    if (numRead < 0) {
-                        break;
-                    }
-
-                    buffer.rewind();
-                    byte[] gottenData = buffer.array();
-                    if (byteBuilder != null) {
-                        int missedData = byteBuilder.len() - byteBuilder.getData()[0].length;
-                        byte[] arr = new byte[missedData];
-                        System.arraycopy(gottenData, 0, arr, 0, missedData);
-                        byteBuilder.put(arr);
-                        buffer.position(missedData + buffer.position());
-
-                        MetricPackage metricPackage = metricCodec.decode(ByteBuffer.wrap(byteBuilder.build()));
-                        log.info("{}", metricPackage);
-                        byteBuilder = null;
-                    }
-
-                    while (buffer.position() < numRead) {
-                        int len = buffer.getInt();
-                        if (len + buffer.position() >= numRead) {
-                            int missedData = len + buffer.position() - numRead;
-                            byte[] messageCopy = new byte[len - missedData];
-                            System.arraycopy(gottenData, buffer.position(), messageCopy, 0, len - missedData);
-                            byteBuilder = new ByteBuilder(2);
-                            byteBuilder.put(messageCopy);
-                            byteBuilder.setLen(len);
+                        // теперь в канал можно писать
+                        sKey.interestOps(SelectionKey.OP_WRITE);
+                    } else if (sKey.isReadable()) {
+                        buffer.clear();
+                        int numRead = channel.read(buffer);
+                        if (numRead < 0) {
                             break;
                         }
 
-                        byte[] messageCopy = new byte[len];
+                        buffer.rewind();
+                        byte[] gottenData = buffer.array();
+                        if (byteBuilder != null) {
+                            int missedData = byteBuilder.len() - byteBuilder.getData()[0].length;
+                            byte[] arr = new byte[missedData];
+                            System.arraycopy(gottenData, 0, arr, 0, missedData);
+                            byteBuilder.put(arr);
+                            buffer.position(missedData + buffer.position());
 
-                        System.arraycopy(gottenData, buffer.position(), messageCopy, 0, len);
-                        buffer.position(len + buffer.position());
+                            MetricPackage metricPackage = metricCodec.decode(ByteBuffer.wrap(byteBuilder.build()));
+                            log.info("{}", metricPackage);
+                            byteBuilder = null;
+                        }
 
-                        MetricPackage metricPackage = metricCodec.decode(ByteBuffer.wrap(messageCopy));
-                        log.info("{}", metricPackage);
+                        while (buffer.position() < numRead) {
+                            int len = buffer.getInt();
+                            if (len + buffer.position() >= numRead) {
+                                int missedData = len + buffer.position() - numRead;
+                                byte[] messageCopy = new byte[len - missedData];
+                                System.arraycopy(gottenData, buffer.position(), messageCopy, 0, len - missedData);
+                                byteBuilder = new ByteBuilder(2);
+                                byteBuilder.put(messageCopy);
+                                byteBuilder.setLen(len);
+                                break;
+                            }
+
+                            byte[] messageCopy = new byte[len];
+
+                            System.arraycopy(gottenData, buffer.position(), messageCopy, 0, len);
+                            buffer.position(len + buffer.position());
+
+                            MetricPackage metricPackage = metricCodec.decode(ByteBuffer.wrap(messageCopy));
+                            log.info("{}", metricPackage);
+                        }
+
+                    } else if (sKey.isWritable()) {
+                        if (queue.size() == 0) {
+    //                        sKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                            continue;
+                        }
+
+                        long curTime = System.currentTimeMillis();
+                        if (curTime > requestTime + 1000) {
+                            System.out.println(requestCounter);
+                            requestTime = curTime;
+                            requestCounter = 0;
+                            maxRequestAtSecond += maxRequestStep;
+                        }
+
+                        if (requestCounter > maxRequestAtSecond) {
+                            continue;
+                        }
+                        requestCounter++;
+
+                        byte[] line = queue.poll();
+                        if (line == null) {
+                            break;
+                        }
+
+                        channel.write(ByteBuffer.wrap(line));
                     }
-
-                } else if (sKey.isWritable()) {
-                    if (queue.size() == 0) {
-//                        sKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-                        continue;
-                    }
-
-                    byte[] line = queue.poll();
-                    if (line == null) {
-                        break;
-                    }
-
-                    channel.write(ByteBuffer.wrap(line));
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
